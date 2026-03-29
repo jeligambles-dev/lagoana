@@ -1,22 +1,26 @@
+import { Resend } from "resend";
 import nodemailer from "nodemailer";
 
-const port = Number(process.env.SMTP_PORT) || 587;
+const resendApiKey = process.env.RESEND_API_KEY;
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port,
-  secure: port === 465, // true for 465 (SSL), false for 587 (STARTTLS)
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+// Use Resend API in production, SMTP locally
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
+const transporter = !resend
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: Number(process.env.SMTP_PORT) === 465,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+      tls: { rejectUnauthorized: false },
+    })
+  : null;
 
 interface SendEmailOptions {
   to: string;
@@ -25,14 +29,29 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
+  const from = process.env.SMTP_FROM || "Lagoana <verify@lagoana.ro>";
+
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || "Lagoana <verify@lagoana.ro>",
-      to,
-      subject,
-      html,
-    });
-    return true;
+    if (resend) {
+      // Use Resend API (works on Railway, no SMTP port needed)
+      const result = await resend.emails.send({ from, to, subject, html });
+      if (result.error) {
+        console.error("[EMAIL] Resend error:", result.error);
+        return false;
+      }
+      console.log("[EMAIL] Sent via Resend to:", to);
+      return true;
+    }
+
+    if (transporter) {
+      // Use SMTP (local dev)
+      await transporter.sendMail({ from, to, subject, html });
+      console.log("[EMAIL] Sent via SMTP to:", to);
+      return true;
+    }
+
+    console.error("[EMAIL] No email provider configured");
+    return false;
   } catch (error) {
     console.error("[EMAIL] Failed to send:", error);
     return false;
