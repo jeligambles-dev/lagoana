@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,10 +43,28 @@ interface UploadedImage {
 
 export default function PublishPage() {
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState("");
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (sessionStatus === "unauthenticated") {
+      router.push("/cont/autentificare");
+    }
+  }, [sessionStatus, router]);
+
+  if (sessionStatus === "loading") {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-[#666]" />
+      </div>
+    );
+  }
+
+  if (!session) return null;
 
   // Step 1
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
