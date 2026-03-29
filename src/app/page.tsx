@@ -1,65 +1,166 @@
-import Image from "next/image";
+export const dynamic = "force-dynamic";
 
-export default function Home() {
+import Link from "next/link";
+import { prisma } from "@/lib/db";
+import { AdCard } from "@/components/ads/AdCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Search,
+  Crosshair,
+  Target,
+  Eye,
+  Sword,
+  Shirt,
+  Settings,
+  Dog,
+  MapPin,
+  ArrowRight,
+} from "lucide-react";
+
+const categoryIcons: Record<string, React.ElementType> = {
+  "arme-de-foc": Crosshair,
+  munitie: Target,
+  optica: Eye,
+  "cutite-unelte": Sword,
+  "arcuri-arbalete": Target,
+  echipament: Shirt,
+  "accesorii-arme": Settings,
+  "caini-vanatoare": Dog,
+  servicii: MapPin,
+};
+
+async function getSpotlightAds() {
+  return prisma.ad.findMany({
+    where: {
+      status: "ACTIVE",
+      spotlightUntil: { gt: new Date() },
+    },
+    include: {
+      images: { orderBy: { position: "asc" }, take: 1 },
+      category: { select: { slug: true, name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 4,
+  });
+}
+
+async function getRecentAds() {
+  return prisma.ad.findMany({
+    where: { status: "ACTIVE" },
+    include: {
+      images: { orderBy: { position: "asc" }, take: 1 },
+      category: { select: { slug: true, name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 8,
+  });
+}
+
+async function getCategories() {
+  return prisma.category.findMany({
+    where: { parentId: null, isActive: true },
+    orderBy: { position: "asc" },
+  });
+}
+
+export default async function HomePage() {
+  const [spotlightAds, recentAds, categories] = await Promise.all([
+    getSpotlightAds(),
+    getRecentAds(),
+    getCategories(),
+  ]);
+
+  const displaySpotlight = spotlightAds.length > 0 ? spotlightAds : recentAds.slice(0, 4);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div>
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-[#1B3A2B] via-[#0F2019] to-[#0B0B0B]">
+        <div className="max-w-7xl mx-auto px-4 py-16 sm:py-24 text-center">
+          <h1 className="text-3xl sm:text-5xl font-bold mb-4 text-[#EDEDED]">
+            Piata ta de <span className="text-gold">vanatoare</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-[#888] text-lg mb-8 max-w-2xl mx-auto">
+            Cumpara si vinde echipament de vanatoare. Publicare gratuita, simplu si rapid.
           </p>
+          <form action="/anunturi" method="get" className="max-w-xl mx-auto">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#666]" />
+              <Input
+                name="q"
+                type="search"
+                placeholder="Ce cauti? (ex: luneta, cutit, arma)"
+                className="h-14 pl-12 pr-4 text-lg bg-[#1E1E1E] text-[#EDEDED] border-[#2A2A2A] rounded-xl focus:border-gold placeholder:text-[#555]"
+              />
+            </div>
+          </form>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Categories */}
+      <section className="max-w-7xl mx-auto px-4 -mt-8 relative z-10">
+        <div className="bg-[#111111] rounded-xl border border-[#2A2A2A] p-6">
+          <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-4">
+            {categories.map((cat) => {
+              const Icon = categoryIcons[cat.slug] || Target;
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/anunturi?category=${cat.slug}`}
+                  className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-[#1B3A2B]/30 transition group"
+                >
+                  <div className="w-12 h-12 bg-[#1B3A2B] rounded-full flex items-center justify-center group-hover:bg-[#1B3A2B]/80 transition">
+                    <Icon className="h-5 w-5 text-gold" />
+                  </div>
+                  <span className="text-xs text-center text-[#EDEDED]/70 font-medium leading-tight group-hover:text-gold transition">
+                    {cat.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Spotlight */}
+      {displaySpotlight.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-[#EDEDED]">Anunturi in spotlight</h2>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {displaySpotlight.map((ad) => (
+              <AdCard key={ad.id} ad={ad} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Recent ads */}
+      <section className="max-w-7xl mx-auto px-4 pb-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-[#EDEDED]">Anunturi recente</h2>
+          <Button render={<Link href="/anunturi" />} variant="ghost" className="text-gold hover:text-gold-light">
+              Vezi toate
+              <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+        {recentAds.length > 0 ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {recentAds.map((ad) => (
+              <AdCard key={ad.id} ad={ad} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-[#111111] rounded-xl border border-[#2A2A2A]">
+            <p className="text-[#888] mb-4">Inca nu exista anunturi. Fii primul care publica!</p>
+            <Button render={<Link href="/publica" />} className="bg-gold text-[#0B0B0B] hover:bg-gold-light font-semibold">
+              Publica primul anunt
+            </Button>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

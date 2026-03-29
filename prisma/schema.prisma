@@ -1,0 +1,425 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AdStatus {
+  ACTIVE
+  SOLD
+  EXPIRED
+  DRAFT
+  REMOVED
+}
+
+enum AdCondition {
+  NEW
+  USED
+  LIKE_NEW
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+  ACTIONED
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+// ─── Auth Models ───────────────────────────────────────
+
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  passwordHash   String?
+  name           String?
+  avatarUrl      String?
+  bio            String?
+  phone          String?
+  county         String?
+  city           String?
+  role           Role       @default(USER)
+  status         UserStatus @default(ACTIVE)
+  isPhoneVerified  Boolean  @default(false)
+  isIdVerified     Boolean  @default(false)
+  isPermitVerified Boolean  @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  lastLogin      DateTime?
+  lastOnline     DateTime?
+
+  accounts       Account[]
+  sessions       Session[]
+  ads            Ad[]
+  sentMessages   Message[]  @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  favorites      Favorite[]
+  reports        Report[]   @relation("ReporterReports")
+  sectionPosts   SectionPost[]
+  auditLogs      AdminAuditLog[]
+  savedSearches  SavedSearch[]
+  notifications  Notification[]
+  pushSubscriptions PushSubscription[]
+  reviewsGiven   Review[]       @relation("ReviewAuthor")
+  reviewsReceived Review[]      @relation("ReviewTarget")
+  adViews        AdView[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Category ──────────────────────────────────────────
+
+model Category {
+  id        String     @id @default(cuid())
+  parentId  String?
+  name      String
+  slug      String     @unique
+  icon      String?
+  position  Int        @default(0)
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+
+  parent    Category?  @relation("CategoryChildren", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryChildren")
+  ads       Ad[]
+  attributes CategoryAttribute[]
+}
+
+model CategoryAttribute {
+  id         String   @id @default(cuid())
+  categoryId String
+  key        String
+  label      String
+  type       String   @default("text") // text, number, select
+  options    String?  // JSON array for select type
+  required   Boolean  @default(false)
+  position   Int      @default(0)
+
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, key])
+}
+
+// ─── Ads ───────────────────────────────────────────────
+
+model Ad {
+  id             String      @id @default(cuid())
+  userId         String
+  categoryId     String
+  title          String
+  slug           String      @unique
+  description    String
+  price          Float?
+  currency       String      @default("RON")
+  isNegotiable   Boolean     @default(false)
+  condition      AdCondition
+  county         String
+  city           String
+  latitude       Float?
+  longitude      Float?
+  status         AdStatus    @default(ACTIVE)
+  viewsCount     Int         @default(0)
+  favoritesCount Int         @default(0)
+  previousPrice  Float?
+  promotedUntil  DateTime?
+  spotlightUntil DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  expiresAt      DateTime
+
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category       Category    @relation(fields: [categoryId], references: [id])
+  images         AdImage[]
+  attributes     AdAttribute[]
+  messages       Message[]
+  favorites      Favorite[]
+  reports        Report[]
+  reviews        Review[]
+  adViews        AdView[]
+
+  @@index([status, createdAt])
+  @@index([categoryId, status])
+  @@index([userId])
+}
+
+model AdImage {
+  id           String   @id @default(cuid())
+  adId         String
+  url          String
+  thumbnailUrl String?
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  ad           Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+}
+
+model AdAttribute {
+  id    String @id @default(cuid())
+  adId  String
+  key   String
+  value String
+
+  ad    Ad     @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@unique([adId, key])
+}
+
+// ─── Messaging ─────────────────────────────────────────
+
+model Message {
+  id         String   @id @default(cuid())
+  adId       String
+  senderId   String
+  receiverId String
+  body       String
+  isRead     Boolean  @default(false)
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  ad         Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([adId, senderId, receiverId])
+  @@index([receiverId, isRead])
+}
+
+// ─── Favorites ─────────────────────────────────────────
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  adId      String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, adId])
+}
+
+// ─── Reports ───────────────────────────────────────────
+
+model Report {
+  id         String       @id @default(cuid())
+  reporterId String
+  adId       String
+  reason     String
+  details    String?
+  status     ReportStatus @default(PENDING)
+  adminNotes String?
+  createdAt  DateTime     @default(now())
+
+  reporter   User         @relation("ReporterReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  ad         Ad           @relation(fields: [adId], references: [id], onDelete: Cascade)
+}
+
+// ─── Content Sections ──────────────────────────────────
+
+model Section {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  type        String        @default("blog") // blog, recipes, custom
+  description String?
+  icon        String?
+  isActive    Boolean       @default(true)
+  showInHeader Boolean      @default(false)
+  showInFooter Boolean      @default(false)
+  position    Int           @default(0)
+  createdAt   DateTime      @default(now())
+
+  posts       SectionPost[]
+}
+
+model SectionPost {
+  id            String   @id @default(cuid())
+  sectionId     String
+  authorId      String
+  title         String
+  slug          String
+  body          String
+  coverImageUrl String?
+  status        String   @default("draft") // draft, published, archived
+  publishedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  section       Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  author        User     @relation(fields: [authorId], references: [id])
+
+  @@unique([sectionId, slug])
+}
+
+// ─── Reviews ───────────────────────────────────────────
+
+model Review {
+  id         String   @id @default(cuid())
+  authorId   String
+  targetId   String   // The seller being reviewed
+  adId       String   // The ad the transaction was about
+  rating     Int      // 1-5
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  author     User     @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  target     User     @relation("ReviewTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  ad         Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@unique([authorId, adId])
+  @@index([targetId])
+}
+
+// ─── Ad View History (Analytics) ───────────────────────
+
+model AdView {
+  id        String   @id @default(cuid())
+  adId      String
+  userId    String?
+  date      DateTime @default(now()) @db.Date
+  views     Int      @default(1)
+  createdAt DateTime @default(now())
+
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([adId, date])
+  @@index([adId, date])
+}
+
+// ─── Saved Searches ────────────────────────────────────
+
+model SavedSearch {
+  id         String   @id @default(cuid())
+  userId     String
+  name       String?
+  query      String?
+  filters    String   // JSON: {category, condition, county, minPrice, maxPrice}
+  notifyEmail Boolean @default(true)
+  notifyPush  Boolean @default(true)
+  lastNotifiedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── Notifications ─────────────────────────────────────
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String   // saved_search_match, favorite_price_drop, favorite_expiring, new_message
+  title      String
+  body       String
+  link       String?
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+// ─── Push Subscriptions ────────────────────────────────
+
+model PushSubscription {
+  id         String   @id @default(cuid())
+  userId     String
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── Armurieri Autorizati (Licensed Gun Shops) ─────────
+
+model Armurier {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  address     String
+  county      String
+  city        String
+  phone       String?
+  email       String?
+  website     String?
+  logoUrl     String?
+  latitude    Float?
+  longitude   Float?
+  isActive    Boolean  @default(true)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── Admin Audit Log ───────────────────────────────────
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  targetType String
+  targetId   String
+  details    String?  // JSON
+  createdAt  DateTime @default(now())
+
+  admin      User     @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([createdAt])
+}
