@@ -62,7 +62,7 @@ export function verificationEmailHtml(code: string): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #C9A646; margin: 0; font-size: 28px;">Lagoana</h1>
+        <img src="https://www.lagoana.ro/logo.png" alt="Lagoana" width="120" height="120" style="display: block; margin: 0 auto 10px;" />
         <p style="color: #888; font-size: 14px; margin-top: 5px;">Piata ta de vanatoare</p>
       </div>
       <div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 30px; text-align: center;">
@@ -83,7 +83,7 @@ export function newMessageEmailHtml(senderName: string, adTitle: string, message
   return `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #C9A646; margin: 0; font-size: 28px;">Lagoana</h1>
+        <img src="https://www.lagoana.ro/logo.png" alt="Lagoana" width="120" height="120" style="display: block; margin: 0 auto 10px;" />
       </div>
       <div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 25px;">
         <p style="color: #C9A646; font-size: 14px; margin: 0 0 5px;">Mesaj nou de la</p>
@@ -107,7 +107,7 @@ export function savedSearchMatchEmailHtml(searchName: string, adTitles: string[]
   return `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #C9A646; margin: 0; font-size: 28px;">Lagoana</h1>
+        <img src="https://www.lagoana.ro/logo.png" alt="Lagoana" width="120" height="120" style="display: block; margin: 0 auto 10px;" />
       </div>
       <div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 25px;">
         <p style="color: #C9A646; font-size: 14px; margin: 0 0 5px;">Anunturi noi pentru cautarea ta</p>
@@ -128,7 +128,7 @@ export function priceDropEmailHtml(adTitle: string, oldPrice: number, newPrice: 
   return `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #C9A646; margin: 0; font-size: 28px;">Lagoana</h1>
+        <img src="https://www.lagoana.ro/logo.png" alt="Lagoana" width="120" height="120" style="display: block; margin: 0 auto 10px;" />
       </div>
       <div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 25px; text-align: center;">
         <p style="color: #C9A646; font-size: 20px; font-weight: bold; margin: 0 0 10px;">Pret redus cu ${drop}%!</p>
@@ -147,7 +147,7 @@ export function expiringAdEmailHtml(adTitle: string, adUrl: string): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #C9A646; margin: 0; font-size: 28px;">Lagoana</h1>
+        <img src="https://www.lagoana.ro/logo.png" alt="Lagoana" width="120" height="120" style="display: block; margin: 0 auto 10px;" />
       </div>
       <div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 25px; text-align: center;">
         <p style="color: #C9A646; font-size: 16px; font-weight: bold; margin: 0 0 10px;">Anunt favorit expira curand</p>

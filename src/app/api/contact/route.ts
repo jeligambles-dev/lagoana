@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #C9A646; margin: 0; font-size: 28px;">Lagoana</h1>
+          <img src="https://www.lagoana.ro/logo.png" alt="Lagoana" width="120" height="120" style="display: block; margin: 0 auto 10px;" />
           <p style="color: #888; font-size: 14px; margin-top: 5px;">Mesaj nou de contact</p>
         </div>
         <div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 25px;">
