@@ -1,6 +1,5 @@
 [build]
 builder = "nixpacks"
-nixpacksVersion = "1.x"
 
 [build.nixpacks]
 nixPkgs = ["nodejs_22"]
