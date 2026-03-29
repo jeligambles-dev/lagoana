@@ -23,4 +23,4 @@ ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 
 # Push schema and start
-CMD ["sh", "-c", "npx prisma db push && node node_modules/next/dist/bin/next start"]
+CMD ["sh", "-c", "echo \"DB URL set: $(echo $DATABASE_URL | head -c 30)...\" && npx prisma db push --url \"$DATABASE_URL\" && node node_modules/next/dist/bin/next start"]
