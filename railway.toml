@@ -2,7 +2,6 @@
 builder = "nixpacks"
 
 [build.nixpacks]
-nixPkgs = ["nodejs_22"]
 buildCmd = "npx prisma generate && node node_modules/next/dist/bin/next build"
 
 [deploy]
