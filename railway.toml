@@ -5,7 +5,7 @@ builder = "nixpacks"
 buildCmd = "npx prisma generate && node node_modules/next/dist/bin/next build"
 
 [deploy]
-startCommand = "npx prisma db push --skip-generate && node .next/standalone/server.js"
+startCommand = "npx prisma db push --skip-generate && node node_modules/next/dist/bin/next start"
 healthcheckPath = "/"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
