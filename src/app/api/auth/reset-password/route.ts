@@ -59,17 +59,17 @@ export async function POST(request: Request) {
       });
 
       // Send email with raw token
-      const baseUrl = process.env.NEXTAUTH_URL || "https://lagoana.ro";
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.AUTH_URL || "https://www.lagoana.ro";
       const resetLink = `${baseUrl}/cont/reseteaza-parola?token=${rawToken}&email=${encodeURIComponent(email)}`;
 
-      await sendEmail({
+      sendEmail({
         to: email,
         subject: "Resetare parola - Lagoana",
         html: resetPasswordEmailHtml(resetLink),
-      });
+      }).catch((err) => console.error("[RESET_PASSWORD] Email failed:", err));
     }
 
-    // Always return success
+    // Always return success immediately (don't wait for email)
     return NextResponse.json({ message: "OK" });
   } catch (error) {
     console.error("[RESET_PASSWORD] POST error:", error);
