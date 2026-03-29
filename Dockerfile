@@ -23,4 +23,4 @@ ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 
 # Push schema and start
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node node_modules/next/dist/bin/next start"]
+CMD ["sh", "-c", "npx prisma db push && node node_modules/next/dist/bin/next start"]
