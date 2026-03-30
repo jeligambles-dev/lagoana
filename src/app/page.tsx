@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/db";
 import { AdCard } from "@/components/ads/AdCard";
 import { Button } from "@/components/ui/button";
@@ -103,9 +104,15 @@ export default async function HomePage() {
                   href={`/anunturi?category=${cat.slug}`}
                   className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-[#1B3A2B]/30 transition group"
                 >
-                  <div className="w-12 h-12 bg-[#1B3A2B] rounded-full flex items-center justify-center group-hover:bg-[#1B3A2B]/80 transition">
-                    <Icon className="h-5 w-5 text-gold" />
-                  </div>
+                  {cat.imageUrl ? (
+                    <div className="w-12 h-12 rounded-full overflow-hidden shrink-0">
+                      <Image src={cat.imageUrl} alt={cat.name} width={48} height={48} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 bg-[#1B3A2B] rounded-full flex items-center justify-center group-hover:bg-[#1B3A2B]/80 transition">
+                      <Icon className="h-5 w-5 text-gold" />
+                    </div>
+                  )}
                   <span className="text-xs text-center text-[#EDEDED]/70 font-medium leading-tight group-hover:text-gold transition">
                     {cat.name}
                   </span>

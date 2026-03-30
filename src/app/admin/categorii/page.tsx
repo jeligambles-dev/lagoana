@@ -7,14 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, ChevronRight, FolderTree, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, ChevronRight, FolderTree, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface Category {
   id: string;
   name: string;
   slug: string;
   icon: string | null;
+  imageUrl: string | null;
+  description: string | null;
   position: number;
   isActive: boolean;
   parentId: string | null;
@@ -32,6 +35,9 @@ export default function AdminCategoriesPage() {
   const [formName, setFormName] = useState("");
   const [formSlug, setFormSlug] = useState("");
   const [formIcon, setFormIcon] = useState("");
+  const [formImageUrl, setFormImageUrl] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -51,6 +57,8 @@ export default function AdminCategoriesPage() {
     setFormName("");
     setFormSlug("");
     setFormIcon("");
+    setFormImageUrl("");
+    setFormDescription("");
     setShowAdd(true);
     setEditingCat(null);
   }
@@ -60,6 +68,8 @@ export default function AdminCategoriesPage() {
     setFormName(cat.name);
     setFormSlug(cat.slug);
     setFormIcon(cat.icon || "");
+    setFormImageUrl(cat.imageUrl || "");
+    setFormDescription(cat.description || "");
     setShowAdd(true);
     setAddParentId(cat.parentId);
   }
@@ -72,6 +82,8 @@ export default function AdminCategoriesPage() {
       name: formName,
       slug: formSlug || formName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
       icon: formIcon || null,
+      imageUrl: formImageUrl || null,
+      description: formDescription || null,
       parentId: addParentId,
     };
 
@@ -108,6 +120,24 @@ export default function AdminCategoriesPage() {
     }
   }
 
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    if (res.ok) {
+      const data = await res.json();
+      setFormImageUrl(data.url);
+      toast.success("Imagine incarcata.");
+    } else {
+      toast.error("Eroare la incarcarea imaginii.");
+    }
+    setUploading(false);
+    e.target.value = "";
+  }
+
   async function toggleActive(catId: string, isActive: boolean) {
     await fetch("/api/admin/categories", {
       method: "PUT",
@@ -136,7 +166,13 @@ export default function AdminCategoriesPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <FolderTree className="h-5 w-5 text-gold" />
+                  {cat.imageUrl ? (
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#1E1E1E] shrink-0">
+                      <Image src={cat.imageUrl} alt={cat.name} width={40} height={40} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <FolderTree className="h-5 w-5 text-gold" />
+                  )}
                   <span className="font-medium text-[#EDEDED]">{cat.name}</span>
                   <Badge variant="secondary" className="text-xs">/{cat.slug}</Badge>
                   {!cat.isActive && (
@@ -225,6 +261,43 @@ export default function AdminCategoriesPage() {
                 value={formIcon}
                 onChange={(e) => setFormIcon(e.target.value)}
                 placeholder="Ex: Crosshair, Target, Eye"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Imagine categorie</Label>
+              {formImageUrl && (
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-[#1E1E1E] mb-2">
+                  <Image src={formImageUrl} alt="Preview" fill className="object-cover" sizes="80px" />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <label className="flex-1">
+                  <div className="flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[#2A2A2A] bg-[#111111] cursor-pointer hover:border-gold transition text-sm text-[#888]">
+                    {uploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        Incarca imagine
+                      </>
+                    )}
+                  </div>
+                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
+                </label>
+                <Input
+                  value={formImageUrl}
+                  onChange={(e) => setFormImageUrl(e.target.value)}
+                  placeholder="sau URL imagine"
+                  className="flex-1"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Descriere</Label>
+              <Input
+                value={formDescription}
+                onChange={(e) => setFormDescription(e.target.value)}
+                placeholder="Descriere scurta a categoriei"
               />
             </div>
             <Button onClick={handleSave} className="w-full bg-gold hover:bg-gold-light">

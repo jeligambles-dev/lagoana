@@ -159,7 +159,7 @@ export function Header() {
       {/* Mobile: logo + search bar */}
       <div className="sm:hidden bg-[#0F1111] border-b border-[#2A2A2A] px-4 py-2 flex items-center gap-3">
         <Link href="/" className="shrink-0">
-          <Image src="/logo.png" alt="Lagoana" width={100} height={100} className="h-10 w-10" />
+          <Image src="/logo.png" alt="Lagoana" width={200} height={200} className="h-20 w-20" />
         </Link>
         <SearchAutocomplete />
       </div>

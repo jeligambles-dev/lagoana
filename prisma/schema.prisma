@@ -117,14 +117,16 @@ model VerificationToken {
 // ─── Category ──────────────────────────────────────────
 
 model Category {
-  id        String     @id @default(cuid())
-  parentId  String?
-  name      String
-  slug      String     @unique
-  icon      String?
-  position  Int        @default(0)
-  isActive  Boolean    @default(true)
-  createdAt DateTime   @default(now())
+  id          String     @id @default(cuid())
+  parentId    String?
+  name        String
+  slug        String     @unique
+  icon        String?
+  imageUrl    String?
+  description String?
+  position    Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
 
   parent    Category?  @relation("CategoryChildren", fields: [parentId], references: [id])
   children  Category[] @relation("CategoryChildren")

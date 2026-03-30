@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const session = await verifyAdmin();
   if (!session) return NextResponse.json({ error: "Neautorizat" }, { status: 403 });
 
-  const { name, slug, icon, parentId } = await request.json();
+  const { name, slug, icon, imageUrl, description, parentId } = await request.json();
 
   if (!name || !slug) {
     return NextResponse.json({ error: "Numele si slug-ul sunt obligatorii." }, { status: 400 });
@@ -35,6 +35,8 @@ export async function POST(request: Request) {
       name,
       slug,
       icon,
+      imageUrl: imageUrl || null,
+      description: description || null,
       parentId: parentId || null,
       position: (maxPos._max.position ?? -1) + 1,
     },
