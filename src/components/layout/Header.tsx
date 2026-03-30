@@ -50,7 +50,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50">
       {/* Full header - hidden on mobile entirely, collapses on scroll on desktop */}
-      <div className={`hidden sm:block transition-all duration-300 ${scrolled ? "h-0 opacity-0 pointer-events-none" : "opacity-100"}`}>
+      <div className={`hidden sm:block transition-all duration-300 overflow-hidden ${scrolled ? "max-h-0" : "max-h-[500px]"}`}>
         {/* Top bar - utility links (desktop only, before scroll) */}
         <div className="bg-[#0B0B0B] border-b border-[#1E1E1E]">
           <div className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-between text-xs">
