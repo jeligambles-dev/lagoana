@@ -102,16 +102,16 @@ export function Header() {
       </div>
 
       {/* Compact sticky bar - categories + account links (desktop only) */}
-      <div className="bg-[#1B3A2B] hidden sm:block">
+      <div className={`hidden sm:block transition-all duration-300 ${scrolled ? "bg-[#0F1111]" : "bg-[#1B3A2B]"}`}>
         <div className="max-w-7xl mx-auto px-4">
-          <nav className="flex items-center h-10 overflow-x-auto">
-            {/* Logo mini - only visible when scrolled */}
-            <Link href="/" className={`shrink-0 mr-2 transition-all duration-300 ${scrolled ? "opacity-100 w-8" : "opacity-0 w-0"}`}>
-              <Image src="/logo.png" alt="Lagoana" width={32} height={32} className="h-8 w-8" />
+          <nav className={`flex items-center transition-all duration-300 ${scrolled ? "h-20" : "h-10"}`}>
+            {/* Logo - visible when scrolled */}
+            <Link href="/" className={`shrink-0 transition-all duration-300 overflow-hidden ${scrolled ? "opacity-100 w-20 mr-4" : "opacity-0 w-0 mr-0"}`}>
+              <Image src="/logo.png" alt="Lagoana" width={200} height={200} className="h-16 w-16" />
             </Link>
 
             {/* Category links */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               <NavLink href="/anunturi?category=arme-de-foc" icon={Crosshair}>Arme de foc</NavLink>
               <NavLink href="/anunturi?category=munitie" icon={Target}>Munitie</NavLink>
               <NavLink href="/anunturi?category=optica" icon={Eye}>Optica</NavLink>
@@ -122,7 +122,7 @@ export function Header() {
             </div>
 
             {/* Spacer */}
-            <div className="flex-1" />
+            <div className="flex-1 min-w-0" />
 
             {/* Account links - next to categories */}
             <div className="flex items-center gap-3 text-xs shrink-0 ml-4">
