@@ -56,19 +56,10 @@ export function Header() {
           <div className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-between text-xs">
             <span className="text-[#888]">Piata ta de echipament de vanatoare</span>
             <div className="flex items-center gap-4">
-              {session ? (
-                <>
-                  {session.user.role === "ADMIN" && (
-                    <Link href="/admin" className="text-gold/70 hover:text-gold transition flex items-center gap-1">
-                      <ShieldCheck className="h-3 w-3" /> Admin
-                    </Link>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Link href="/cont/autentificare" className="text-[#888] hover:text-gold transition">Autentificare</Link>
-                  <Link href="/cont/inregistrare" className="text-gold hover:text-gold-light transition font-medium">Inregistrare</Link>
-                </>
+              {session?.user.role === "ADMIN" && (
+                <Link href="/admin" className="text-gold/70 hover:text-gold transition flex items-center gap-1">
+                  <ShieldCheck className="h-3 w-3" /> Admin
+                </Link>
               )}
             </div>
           </div>
@@ -147,8 +138,12 @@ export function Header() {
                 </>
               ) : (
                 <>
-                  <Link href="/cont/autentificare" className="text-[#EDEDED]/70 hover:text-gold transition">Autentificare</Link>
-                  <Link href="/cont/inregistrare" className="text-gold hover:text-gold-light transition font-medium">Inregistrare</Link>
+                  <Link href="/cont/autentificare" className="text-[#EDEDED]/70 hover:text-gold transition flex items-center gap-1">
+                    <LogOut className="h-3 w-3" /> Autentificare
+                  </Link>
+                  <Link href="/cont/inregistrare" className="text-gold hover:text-gold-light transition font-medium flex items-center gap-1">
+                    <User className="h-3 w-3" /> Inregistrare
+                  </Link>
                 </>
               )}
             </div>
