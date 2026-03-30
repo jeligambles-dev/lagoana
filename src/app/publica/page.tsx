@@ -38,7 +38,7 @@ interface Category {
 
 interface UploadedImage {
   url: string;
-  file?: File;
+  previewUrl: string;
 }
 
 export default function PublishPage() {
@@ -101,10 +101,13 @@ export default function PublishPage() {
       const formData = new FormData();
       formData.append("file", file);
 
+      const previewUrl = URL.createObjectURL(file);
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       if (res.ok) {
         const data = await res.json();
-        setImages((prev) => [...prev, { url: data.url }]);
+        setImages((prev) => [...prev, { url: data.url, previewUrl }]);
+      } else {
+        URL.revokeObjectURL(previewUrl);
       }
     }
     setUploading(false);
@@ -338,7 +341,7 @@ export default function PublishPage() {
             <div className="grid grid-cols-5 gap-3">
               {images.map((img, i) => (
                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-[#2A2A2A]">
-                  <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  <img src={img.previewUrl} alt="" className="w-full h-full object-cover" />
                   <button
                     onClick={() => removeImage(i)}
                     className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5"
@@ -434,7 +437,7 @@ export default function PublishPage() {
                 <div className="grid grid-cols-4 gap-2">
                   {images.map((img, i) => (
                     <div key={i} className="aspect-square rounded-lg overflow-hidden">
-                      <img src={img.url} alt="" className="w-full h-full object-cover" />
+                      <img src={img.previewUrl} alt="" className="w-full h-full object-cover" />
                     </div>
                   ))}
                 </div>

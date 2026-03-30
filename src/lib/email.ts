@@ -94,7 +94,7 @@ export function newMessageEmailHtml(senderName: string, adTitle: string, message
         </div>
       </div>
       <div style="text-align: center; margin-top: 25px;">
-        <a href="https://lagoana.ro/cont/mesaje" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px;">
+        <a href="https://www.lagoana.ro/cont/mesaje" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px;">
           Raspunde acum
         </a>
       </div>
@@ -115,7 +115,7 @@ export function savedSearchMatchEmailHtml(searchName: string, adTitles: string[]
         <ul style="padding-left: 20px; margin: 0;">${adList}</ul>
       </div>
       <div style="text-align: center; margin-top: 25px;">
-        <a href="https://lagoana.ro/anunturi" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px;">
+        <a href="https://www.lagoana.ro/anunturi" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px;">
           Vezi anunturile
         </a>
       </div>
@@ -137,7 +137,7 @@ export function priceDropEmailHtml(adTitle: string, oldPrice: number, newPrice: 
         <p style="color: #C9A646; font-size: 28px; font-weight: bold; margin: 5px 0 0;">${newPrice.toLocaleString("ro-RO")} RON</p>
       </div>
       <div style="text-align: center; margin-top: 25px;">
-        <a href="https://lagoana.ro${adUrl}" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px;">Vezi anuntul</a>
+        <a href="https://www.lagoana.ro${adUrl}" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px;">Vezi anuntul</a>
       </div>
     </div>
   `;
@@ -155,7 +155,7 @@ export function expiringAdEmailHtml(adTitle: string, adUrl: string): string {
         <p style="color: #888; font-size: 13px; margin: 0;">Acest anunt expira in mai putin de 3 zile.</p>
       </div>
       <div style="text-align: center; margin-top: 25px;">
-        <a href="https://lagoana.ro${adUrl}" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px;">Vezi anuntul</a>
+        <a href="https://www.lagoana.ro${adUrl}" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px;">Vezi anuntul</a>
       </div>
     </div>
   `;

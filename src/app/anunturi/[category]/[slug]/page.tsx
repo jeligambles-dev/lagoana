@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ad = await getAd(slug);
   if (!ad) return { title: "Anunt negasit" };
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lagoana.ro";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.lagoana.ro";
   const imageUrl = ad.images[0]?.url ? `${baseUrl}${ad.images[0].url}` : `${baseUrl}/logo.png`;
 
   return {
@@ -146,7 +146,7 @@ export default async function AdDetailPage({ params }: Props) {
 
   const isOwner = session?.user?.id === ad.userId;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://lagoana.ro";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.lagoana.ro";
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
