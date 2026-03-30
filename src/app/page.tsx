@@ -4,9 +4,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { AdCard } from "@/components/ads/AdCard";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { HeroSlider } from "@/components/home/HeroSlider";
 import {
-  Search,
   Crosshair,
   Target,
   Eye,
@@ -57,6 +56,19 @@ async function getRecentAds() {
   });
 }
 
+async function getBanners() {
+  const now = new Date();
+  return prisma.banner.findMany({
+    where: {
+      isActive: true,
+      startsAt: { lte: now },
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+    },
+    orderBy: { position: "asc" },
+    select: { id: true, title: true, imageUrl: true, linkUrl: true, company: true },
+  });
+}
+
 async function getCategories() {
   return prisma.category.findMany({
     where: { parentId: null, isActive: true },
@@ -65,38 +77,19 @@ async function getCategories() {
 }
 
 export default async function HomePage() {
-  const [spotlightAds, recentAds, categories] = await Promise.all([
+  const [spotlightAds, recentAds, categories, banners] = await Promise.all([
     getSpotlightAds(),
     getRecentAds(),
     getCategories(),
+    getBanners(),
   ]);
 
   const displaySpotlight = spotlightAds.length > 0 ? spotlightAds : recentAds.slice(0, 4);
 
   return (
     <div>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-[#1B3A2B] via-[#0F2019] to-[#0B0B0B]">
-        <div className="max-w-7xl mx-auto px-4 py-16 sm:py-24 text-center">
-          <h1 className="text-3xl sm:text-5xl font-bold mb-4 text-[#EDEDED]">
-            Piata ta de <span className="text-gold">vanatoare</span>
-          </h1>
-          <p className="text-[#888] text-lg mb-8 max-w-2xl mx-auto">
-            Cumpara si vinde echipament de vanatoare. Publicare gratuita, simplu si rapid.
-          </p>
-          <form action="/anunturi" method="get" className="max-w-xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#666]" />
-              <Input
-                name="q"
-                type="search"
-                placeholder="Ce cauti? (ex: luneta, cutit, arma)"
-                className="h-14 pl-12 pr-4 text-lg bg-[#1E1E1E] text-[#EDEDED] border-[#2A2A2A] rounded-xl focus:border-gold placeholder:text-[#555]"
-              />
-            </div>
-          </form>
-        </div>
-      </section>
+      {/* Hero Banner Slider */}
+      <HeroSlider banners={banners} />
 
       {/* Categories */}
       <section className="max-w-7xl mx-auto px-4 -mt-8 relative z-10">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Crosshair, Target, Eye, Sword, Shirt, Settings, Dog, MapPin,
-  ArrowLeft, ArrowRight, Upload, X, Check, Loader2,
+  ArrowLeft, ArrowRight, Upload, X, Check, Loader2, AlertTriangle,
 } from "lucide-react";
 import { COUNTIES } from "@/lib/constants";
 
@@ -48,6 +49,8 @@ export default function PublishPage() {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState("");
+  const [userPhone, setUserPhone] = useState<string | null>(null);
+  const [phoneChecked, setPhoneChecked] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -55,6 +58,19 @@ export default function PublishPage() {
       router.push("/cont/autentificare");
     }
   }, [sessionStatus, router]);
+
+  // Fetch user's phone number
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/profile")
+        .then((r) => r.json())
+        .then((data) => {
+          setUserPhone(data.phone || null);
+          setPhoneChecked(true);
+        })
+        .catch(() => setPhoneChecked(true));
+    }
+  }, [session]);
 
   if (sessionStatus === "loading") {
     return (
@@ -199,6 +215,19 @@ export default function PublishPage() {
           {step === 1 ? "Ce vinzi?" : step === 2 ? "Detalii" : "Previzualizare"}
         </span>
       </div>
+
+      {phoneChecked && !userPhone && (
+        <div className="bg-yellow-900/30 border border-yellow-700/50 text-yellow-200 p-4 rounded-lg text-sm mb-4 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Numar de telefon necesar</p>
+            <p className="text-yellow-200/70 mt-1">Trebuie sa ai un numar de telefon salvat in profil pentru a publica un anunt.</p>
+            <Link href="/cont/profil" className="inline-block mt-2 text-gold hover:text-gold-light font-medium underline">
+              Adauga numar de telefon →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm mb-4">{error}</div>
@@ -463,7 +492,7 @@ export default function PublishPage() {
             </Button>
             <Button
               onClick={handlePublish}
-              disabled={loading}
+              disabled={loading || !userPhone}
               className="bg-gold hover:bg-gold-light"
             >
               {loading ? (

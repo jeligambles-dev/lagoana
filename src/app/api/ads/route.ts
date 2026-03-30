@@ -22,6 +22,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Campuri obligatorii lipsa." }, { status: 400 });
   }
 
+  // Check user has a phone number saved
+  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { phone: true } });
+  if (!user?.phone) {
+    return NextResponse.json({ error: "Trebuie sa ai un numar de telefon salvat in profil pentru a publica un anunt." }, { status: 400 });
+  }
+
   const baseSlug = slugify(title, { lower: true, strict: true, locale: "ro" });
   const slug = `${baseSlug}-${Date.now().toString(36)}`;
 

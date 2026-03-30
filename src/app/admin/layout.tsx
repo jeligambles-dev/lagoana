@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   LayoutDashboard, FileText, Users, FolderTree, FileStack,
-  AlertTriangle, ClipboardList, ShieldCheck, Store,
+  AlertTriangle, ClipboardList, ShieldCheck, Store, Image,
 } from "lucide-react";
 
 const adminLinks = [
@@ -9,6 +9,7 @@ const adminLinks = [
   { href: "/admin/anunturi", icon: FileText, label: "Anunturi" },
   { href: "/admin/utilizatori", icon: Users, label: "Utilizatori" },
   { href: "/admin/categorii", icon: FolderTree, label: "Categorii" },
+  { href: "/admin/bannere", icon: Image, label: "Bannere" },
   { href: "/admin/armurieri", icon: Store, label: "Armurieri" },
   { href: "/admin/sectiuni", icon: FileStack, label: "Sectiuni" },
   { href: "/admin/rapoarte", icon: AlertTriangle, label: "Rapoarte" },

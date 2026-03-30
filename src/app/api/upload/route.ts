@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   await writeFile(filepath, buffer);
 
   return NextResponse.json({
-    url: `/uploads/${filename}`,
-    thumbnailUrl: `/uploads/${filename}`,
+    url: `/api/uploads/${filename}`,
+    thumbnailUrl: `/api/uploads/${filename}`,
   });
 }
