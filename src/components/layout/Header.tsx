@@ -104,10 +104,10 @@ export function Header() {
       {/* Compact sticky bar - categories + account links (desktop only) */}
       <div className={`hidden sm:block transition-all duration-300 ${scrolled ? "bg-[#0F1111]" : "bg-[#1B3A2B]"}`}>
         <div className="max-w-7xl mx-auto px-4">
-          <nav className={`flex items-center transition-all duration-300 ${scrolled ? "h-20" : "h-10"}`}>
+          <nav className={`flex items-center transition-all duration-300 ${scrolled ? "h-24" : "h-10"}`}>
             {/* Logo - visible when scrolled */}
-            <Link href="/" className={`shrink-0 transition-all duration-300 overflow-hidden ${scrolled ? "opacity-100 w-20 mr-4" : "opacity-0 w-0 mr-0"}`}>
-              <Image src="/logo.png" alt="Lagoana" width={200} height={200} className="h-16 w-16" />
+            <Link href="/" className={`shrink-0 transition-all duration-300 overflow-hidden ${scrolled ? "opacity-100 w-24 mr-4" : "opacity-0 w-0 mr-0"}`}>
+              <Image src="/logo.png" alt="Lagoana" width={200} height={200} className="h-20 w-20" />
             </Link>
 
             {/* Category links */}

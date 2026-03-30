@@ -15,6 +15,7 @@ import { ReportButton } from "@/components/ads/ReportButton";
 import { ShareButtons } from "@/components/ads/ShareButtons";
 import { AdCard } from "@/components/ads/AdCard";
 import { ReviewSection, SellerRatingBadge } from "@/components/ads/ReviewSection";
+import { PhoneButton } from "@/components/ads/PhoneButton";
 import {
   MapPin, Clock, Eye, User, Shield, Star, Calendar,
 } from "lucide-react";
@@ -306,9 +307,7 @@ export default async function AdDetailPage({ params }: Props) {
                 <div className="space-y-2">
                   <ContactButton adId={ad.id} sellerId={ad.userId} isLoggedIn={!!session} />
                   {ad.user.phone && (
-                    <Button variant="outline" className="w-full">
-                      Arata numarul de telefon
-                    </Button>
+                    <PhoneButton phone={ad.user.phone} />
                   )}
                 </div>
               )}

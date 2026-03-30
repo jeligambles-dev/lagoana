@@ -107,7 +107,7 @@ export function SearchAutocomplete() {
 
       {/* Dropdown */}
       {open && hasResults && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-[#151515] border border-[#2A2A2A] rounded-lg shadow-xl overflow-hidden z-50 max-h-[70vh] overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-[#151515] border border-[#2A2A2A] rounded-lg shadow-xl overflow-hidden z-[60] max-h-[70vh] overflow-y-auto">
 
           {/* Suggestions */}
           {results!.suggestions.length > 0 && (
