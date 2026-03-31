@@ -58,24 +58,9 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Full header - hidden on mobile entirely, collapses on scroll on desktop */}
-      <div className={`hidden sm:block transition-all duration-300 overflow-hidden ${scrolled ? "max-h-0" : "max-h-[500px]"}`}>
-        {/* Top bar - utility links (desktop only, before scroll) */}
-        <div className="bg-[#0B0B0B] border-b border-[#1E1E1E]">
-          <div className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-between text-xs">
-            <span className="text-[#888]">Piata ta de echipament de vanatoare</span>
-            <div className="flex items-center gap-4">
-              {session?.user.role === "ADMIN" && (
-                <Link href="/admin" className="text-gold/70 hover:text-gold transition flex items-center gap-1">
-                  <ShieldCheck className="h-3 w-3" /> Admin
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Main header - Logo + Search + CTA (desktop only, before scroll) */}
-        <div className="bg-[#0F1111]">
+      {/* Main header - Logo + Search + CTA (desktop only, hidden when scrolled) */}
+      {!scrolled && (
+        <div className="hidden sm:block bg-[#0F1111]">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-6">
             <Link href="/" className="shrink-0">
               <Image
@@ -99,7 +84,7 @@ export function Header() {
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Compact sticky bar - categories + account links (desktop only) */}
       <div className={`hidden sm:block transition-all duration-300 ${scrolled ? "bg-[#0F1111]" : "bg-[#1B3A2B]"}`}>
