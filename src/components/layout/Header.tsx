@@ -5,6 +5,13 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import { NotificationBell } from "./NotificationBell";
 import { SearchAutocomplete } from "./SearchAutocomplete";
@@ -19,6 +26,8 @@ import {
   ShieldCheck,
   Store,
   Bell,
+  FileText,
+  ChevronDown,
   Crosshair,
   Target,
   Eye,
@@ -115,27 +124,49 @@ export function Header() {
             {/* Spacer */}
             <div className="flex-1 min-w-0" />
 
-            {/* Account links - next to categories */}
+            {/* Account dropdown / auth links */}
             <div className="flex items-center gap-3 text-xs shrink-0 ml-4">
               {session ? (
-                <>
-                  <Link href="/cont/mesaje" className="text-[#EDEDED]/70 hover:text-gold transition flex items-center gap-1">
-                    <MessageSquare className="h-3 w-3" /> Mesaje
-                  </Link>
-                  <Link href="/cont/favorite" className="text-[#EDEDED]/70 hover:text-gold transition flex items-center gap-1">
-                    <Heart className="h-3 w-3" /> Favorite
-                  </Link>
-                  <Link href="/cont/cautari-salvate" className="text-[#EDEDED]/70 hover:text-gold transition flex items-center gap-1">
-                    <Bell className="h-3 w-3" /> Cautari salvate
-                  </Link>
+                <div className="flex items-center gap-2">
                   <NotificationBell />
-                  <Link href="/cont/profil" className="text-[#EDEDED]/70 hover:text-gold transition flex items-center gap-1">
-                    <User className="h-3 w-3" /> {session.user.name || "Contul meu"}
-                  </Link>
-                  <button onClick={() => signOut({ callbackUrl: "/" })} className="text-[#EDEDED]/70 hover:text-gold transition flex items-center gap-1">
-                    <LogOut className="h-3 w-3" /> Iesire
-                  </button>
-                </>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="flex items-center gap-1 text-[#EDEDED]/70 hover:text-gold transition text-xs cursor-pointer outline-none">
+                      <User className="h-3.5 w-3.5" />
+                      {session.user.name || "Contul meu"}
+                      <ChevronDown className="h-3 w-3" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 bg-[#151515] border-[#2A2A2A]">
+                      <DropdownMenuItem render={<Link href="/cont/profil" />} className="text-[#EDEDED] focus:bg-[#1B3A2B] focus:text-gold">
+                        <User className="h-4 w-4 mr-2" /> Profilul meu
+                      </DropdownMenuItem>
+                      <DropdownMenuItem render={<Link href="/cont/anunturile-mele" />} className="text-[#EDEDED] focus:bg-[#1B3A2B] focus:text-gold">
+                        <FileText className="h-4 w-4 mr-2" /> Anunturile mele
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-[#2A2A2A]" />
+                      <DropdownMenuItem render={<Link href="/cont/mesaje" />} className="text-[#EDEDED] focus:bg-[#1B3A2B] focus:text-gold">
+                        <MessageSquare className="h-4 w-4 mr-2" /> Mesaje
+                      </DropdownMenuItem>
+                      <DropdownMenuItem render={<Link href="/cont/favorite" />} className="text-[#EDEDED] focus:bg-[#1B3A2B] focus:text-gold">
+                        <Heart className="h-4 w-4 mr-2" /> Favorite
+                      </DropdownMenuItem>
+                      <DropdownMenuItem render={<Link href="/cont/cautari-salvate" />} className="text-[#EDEDED] focus:bg-[#1B3A2B] focus:text-gold">
+                        <Bell className="h-4 w-4 mr-2" /> Cautari salvate
+                      </DropdownMenuItem>
+                      {session.user.role === "ADMIN" && (
+                        <>
+                          <DropdownMenuSeparator className="bg-[#2A2A2A]" />
+                          <DropdownMenuItem render={<Link href="/admin" />} className="text-gold focus:bg-[#1B3A2B] focus:text-gold">
+                            <ShieldCheck className="h-4 w-4 mr-2" /> Admin
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      <DropdownMenuSeparator className="bg-[#2A2A2A]" />
+                      <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })} className="text-[#EDEDED] focus:bg-[#1B3A2B] focus:text-gold">
+                        <LogOut className="h-4 w-4 mr-2" /> Deconectare
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               ) : (
                 <>
                   <Link href="/cont/autentificare" className="text-[#EDEDED]/70 hover:text-gold transition flex items-center gap-1">
