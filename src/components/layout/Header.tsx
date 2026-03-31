@@ -43,7 +43,12 @@ export function Header() {
 
   useEffect(() => {
     function onScroll() {
-      setScrolled(window.scrollY > 100);
+      // Hysteresis: scroll down past 150 to collapse, scroll up past 50 to expand
+      // Prevents flickering at the threshold
+      setScrolled((prev) => {
+        if (prev) return window.scrollY > 50;
+        return window.scrollY > 150;
+      });
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
