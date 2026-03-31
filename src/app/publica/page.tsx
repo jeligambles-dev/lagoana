@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -44,6 +44,14 @@ interface UploadedImage {
 }
 
 export default function PublishPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-[#666]" /></div>}>
+      <PublishForm />
+    </Suspense>
+  );
+}
+
+function PublishForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftParam = searchParams.get("draft");

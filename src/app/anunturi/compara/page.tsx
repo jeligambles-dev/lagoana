@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,6 +36,14 @@ const conditionLabels: Record<string, string> = {
 };
 
 export default function ComparePage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-16"><div className="h-6 w-6 animate-spin rounded-full border-2 border-gold border-t-transparent" /></div>}>
+      <CompareContent />
+    </Suspense>
+  );
+}
+
+function CompareContent() {
   const searchParams = useSearchParams();
   const [ads, setAds] = useState<CompareAd[]>([]);
   const [loading, setLoading] = useState(true);
