@@ -1,6 +1,21 @@
+// ─── Cron Job Setup ────────────────────────────────────────────────
+// This route should be called every 15 minutes by an external cron service
+// such as cron-job.org, EasyCron, or Railway cron.
+//
+// URL:  https://<your-domain>/api/cron/check-notifications?secret=<CRON_SECRET>
+//
+// Set the CRON_SECRET environment variable to a random string and pass it as
+// the "secret" query parameter. The endpoint returns 401 in production if the
+// secret does not match.
+//
+// Recommended interval: every 15 minutes (*/15 * * * *)
+// HTTP method: GET
+// ────────────────────────────────────────────────────────────────────
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendEmail, savedSearchMatchEmailHtml, priceDropEmailHtml, expiringAdEmailHtml } from "@/lib/email";
+import { sendPushNotification } from "@/lib/push";
 
 // This endpoint is called periodically (e.g., every 15 min) to:
 // 1. Check saved searches for new matching ads
@@ -89,6 +104,13 @@ export async function GET(request: Request) {
         }
       }
 
+      // Send push notification
+      sendPushNotification(search.user.id, {
+        title: `${newAds.length} anunturi noi pentru "${search.name}"`,
+        body: newAds.map((a) => a.title).join(", ").substring(0, 200),
+        url: `/anunturi?q=${encodeURIComponent(search.query || "")}`,
+      }).catch(() => {});
+
       savedSearchNotifs++;
     }
   }
@@ -148,6 +170,13 @@ export async function GET(request: Request) {
             html: priceDropEmailHtml(ad.title, ad.previousPrice!, ad.price!, `/anunturi/${ad.category.slug}/${ad.slug}`),
           }).catch(() => {});
         }
+
+        // Send push notification
+        sendPushNotification(fav.userId, {
+          title: `Pret redus cu ${drop}%!`,
+          body: `${ad.title} — de la ${ad.previousPrice?.toLocaleString("ro-RO")} la ${ad.price?.toLocaleString("ro-RO")} RON`,
+          url: `/anunturi/${ad.category.slug}/${ad.slug}`,
+        }).catch(() => {});
       }
 
       // Clear previousPrice after notifying
@@ -209,6 +238,13 @@ export async function GET(request: Request) {
           html: expiringAdEmailHtml(ad.title, `/anunturi/${ad.category.slug}/${ad.slug}`),
         }).catch(() => {});
       }
+
+      // Send push notification
+      sendPushNotification(fav.userId, {
+        title: "Anunt favorit expira curand",
+        body: `${ad.title} expira in mai putin de 3 zile.`,
+        url: `/anunturi/${ad.category.slug}/${ad.slug}`,
+      }).catch(() => {});
     }
   }
 

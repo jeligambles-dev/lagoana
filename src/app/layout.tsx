@@ -7,6 +7,7 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { Providers } from "@/components/layout/Providers";
 import { Toaster } from "@/components/ui/sonner";
 import { PwaRegistration } from "@/components/layout/PwaRegistration";
+import { PwaInstallPrompt } from "@/components/layout/PwaInstallPrompt";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 
 const inter = Inter({
@@ -66,6 +67,7 @@ export default function RootLayout({
           <MobileNav />
           <Toaster />
           <PwaRegistration />
+          <PwaInstallPrompt />
           <CookieConsent />
         </Providers>
       </body>

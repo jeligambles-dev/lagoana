@@ -71,7 +71,7 @@ export default async function SellerProfilePage({ params }: Props) {
       ad: { select: { title: true } },
     },
     orderBy: { createdAt: "desc" },
-    take: 20,
+    take: 5,
   });
 
   const avgRating = reviewStats._avg.rating ?? 0;
@@ -222,15 +222,69 @@ export default async function SellerProfilePage({ params }: Props) {
           )}
         </section>
 
-        {/* Reviews */}
+        {/* Reviews Summary Card */}
         <section>
           <h2 className="text-lg font-semibold text-[#EDEDED] mb-4">
             Recenzii ({reviewCount})
           </h2>
+
+          {reviewCount > 0 && (
+            <Card className="bg-[#111111] border-[#2A2A2A] mb-6">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  {/* Big average rating */}
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-5xl font-bold text-gold">{avgRating.toFixed(1)}</span>
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-5 w-5 ${
+                            star <= Math.round(avgRating)
+                              ? "text-gold fill-gold"
+                              : "text-[#444]"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-[#888] mt-1">
+                      {reviewCount} {reviewCount === 1 ? "recenzie" : "recenzii"}
+                    </span>
+                  </div>
+
+                  {/* Rating distribution */}
+                  <div className="flex-1 w-full space-y-1.5">
+                    {[5, 4, 3, 2, 1].map((level) => {
+                      const count = reviews.filter((r) => r.rating === level).length;
+                      const pct = reviewCount > 0 ? (count / reviewCount) * 100 : 0;
+                      return (
+                        <div key={level} className="flex items-center gap-2 text-sm">
+                          <span className="w-3 text-[#888]">{level}</span>
+                          <Star className="h-3 w-3 text-gold fill-gold" />
+                          <div className="flex-1 h-2 bg-[#1A1A1A] rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gold rounded-full transition-all"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="w-8 text-right text-xs text-[#888]">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Recent reviews */}
           {reviews.length === 0 ? (
             <p className="text-[#888] text-sm">Acest utilizator nu are recenzii inca.</p>
           ) : (
             <div className="space-y-4">
+              <h3 className="text-sm font-medium text-[#888] uppercase tracking-wide">
+                Recenzii recente
+              </h3>
               {reviews.map((review) => (
                 <Card key={review.id} className="bg-[#111111] border-[#2A2A2A]">
                   <CardContent className="p-4">

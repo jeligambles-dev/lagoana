@@ -11,6 +11,7 @@ import { COUNTIES } from "@/lib/constants";
 import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { VerificationSection } from "@/components/ads/VerificationSection";
+import { IdVerificationSection } from "@/components/ads/IdVerificationSection";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Profile {
@@ -159,6 +160,7 @@ export default function ProfilePage() {
       </Card>
 
       <VerificationSection />
+      <IdVerificationSection />
     </div>
   );
 }

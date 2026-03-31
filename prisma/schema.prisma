@@ -39,6 +39,13 @@ enum UserStatus {
   BANNED
 }
 
+enum IdVerificationStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ─── Auth Models ───────────────────────────────────────
 
 model User {
@@ -56,6 +63,8 @@ model User {
   isPhoneVerified  Boolean  @default(false)
   isIdVerified     Boolean  @default(false)
   isPermitVerified Boolean  @default(false)
+  idDocumentUrl    String?
+  idVerificationStatus IdVerificationStatus @default(NONE)
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   lastLogin      DateTime?

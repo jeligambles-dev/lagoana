@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
 import { AdminUserActions } from "@/components/admin/AdminUserActions";
+import { AdminIdVerifications } from "@/components/admin/AdminIdVerifications";
 
 interface Props {
   searchParams: Promise<{ q?: string; page?: string }>;
@@ -40,6 +41,8 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-[#EDEDED]">Gestionare utilizatori</h2>
+
+      <AdminIdVerifications />
 
       <form className="flex gap-3">
         <input

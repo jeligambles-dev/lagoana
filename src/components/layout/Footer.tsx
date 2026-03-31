@@ -45,6 +45,7 @@ export function Footer() {
               <li><Link href="/despre" className="hover:text-gold transition">Despre noi</Link></li>
               <li><Link href="/termeni" className="hover:text-gold transition">Termeni si conditii</Link></li>
               <li><Link href="/contact" className="hover:text-gold transition">Contact</Link></li>
+              <li><Link href="/publicitate" className="hover:text-gold transition">Publicitate</Link></li>
             </ul>
           </div>
         </div>

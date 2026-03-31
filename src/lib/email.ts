@@ -143,6 +143,55 @@ export function priceDropEmailHtml(adTitle: string, oldPrice: number, newPrice: 
   `;
 }
 
+export function reportEmailHtml(
+  reporterName: string,
+  adTitle: string,
+  reason: string,
+  details: string | null,
+  adUrl: string
+): string {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <img src="https://www.lagoana.ro/logo.png" alt="Lagoana" width="120" height="120" style="display: block; margin: 0 auto 10px;" />
+      </div>
+      <div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 25px;">
+        <p style="color: #C9A646; font-size: 18px; font-weight: bold; margin: 0 0 15px;">Raport nou primit</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="color: #888; font-size: 13px; padding: 6px 0; vertical-align: top; width: 100px;">Anunt:</td>
+            <td style="color: #EDEDED; font-size: 14px; padding: 6px 0;">${adTitle}</td>
+          </tr>
+          <tr>
+            <td style="color: #888; font-size: 13px; padding: 6px 0; vertical-align: top;">Raportat de:</td>
+            <td style="color: #EDEDED; font-size: 14px; padding: 6px 0;">${reporterName}</td>
+          </tr>
+          <tr>
+            <td style="color: #888; font-size: 13px; padding: 6px 0; vertical-align: top;">Motiv:</td>
+            <td style="color: #EDEDED; font-size: 14px; padding: 6px 0;">${reason}</td>
+          </tr>
+          ${
+            details
+              ? `<tr>
+            <td style="color: #888; font-size: 13px; padding: 6px 0; vertical-align: top;">Detalii:</td>
+            <td style="color: #EDEDED; font-size: 14px; padding: 6px 0;">${details}</td>
+          </tr>`
+              : ""
+          }
+        </table>
+      </div>
+      <div style="text-align: center; margin-top: 25px;">
+        <a href="https://www.lagoana.ro/admin/rapoarte" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px;">
+          Vezi rapoartele
+        </a>
+      </div>
+      <p style="color: #666; font-size: 12px; text-align: center; margin-top: 20px;">
+        <a href="https://www.lagoana.ro${adUrl}" style="color: #888; text-decoration: underline;">Vezi anuntul raportat</a>
+      </p>
+    </div>
+  `;
+}
+
 export function expiringAdEmailHtml(adTitle: string, adUrl: string): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">
