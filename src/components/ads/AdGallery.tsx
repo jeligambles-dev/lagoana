@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
@@ -8,10 +8,17 @@ interface AdGalleryProps {
   images: { id: string; url: string; thumbnailUrl: string | null }[];
 }
 
+const SWIPE_THRESHOLD = 50;
+
 export function AdGallery({ images }: AdGalleryProps) {
   const [current, setCurrent] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Swipe state
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const isSwiping = useRef(false);
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
@@ -27,6 +34,60 @@ export function AdGallery({ images }: AdGalleryProps) {
     () => setLightboxIndex((i) => (i + 1) % images.length),
     [images.length]
   );
+
+  // Swipe handlers pentru galeria principala
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+    isSwiping.current = false;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+    const diff = Math.abs(touchStartX.current - touchEndX.current);
+    if (diff > 10) {
+      isSwiping.current = true;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) >= SWIPE_THRESHOLD && images.length > 1) {
+      if (diff > 0) {
+        // Swipe stanga = urmatoarea imagine
+        setCurrent((c) => (c + 1) % images.length);
+      } else {
+        // Swipe dreapta = imaginea anterioara
+        setCurrent((c) => (c - 1 + images.length) % images.length);
+      }
+    }
+  }, [images.length]);
+
+  // Swipe handlers pentru lightbox
+  const handleLightboxTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+    isSwiping.current = false;
+  }, []);
+
+  const handleLightboxTouchMove = useCallback((e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+    const diff = Math.abs(touchStartX.current - touchEndX.current);
+    if (diff > 10) {
+      isSwiping.current = true;
+    }
+  }, []);
+
+  const handleLightboxTouchEnd = useCallback(() => {
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) >= SWIPE_THRESHOLD && images.length > 1) {
+      if (diff > 0) {
+        nextLightbox();
+      } else {
+        prevLightbox();
+      }
+    }
+  }, [images.length, nextLightbox, prevLightbox]);
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -51,28 +112,34 @@ export function AdGallery({ images }: AdGalleryProps) {
     <div className="space-y-3">
       {/* Main image */}
       <div
-        className="relative aspect-[16/10] bg-[#1E1E1E] rounded-xl overflow-hidden cursor-zoom-in"
-        onClick={() => openLightbox(current)}
+        className="relative aspect-[16/10] bg-[#1E1E1E] rounded-xl overflow-hidden cursor-zoom-in select-none touch-pan-y"
+        onClick={() => {
+          if (!isSwiping.current) openLightbox(current);
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <Image
           src={images[current].url}
           alt=""
           fill
-          className="object-contain"
+          className="object-contain transition-opacity duration-200"
           sizes="(max-width: 1024px) 100vw, 60vw"
           priority
+          draggable={false}
         />
         {images.length > 1 && (
           <>
             <button
               onClick={(e) => { e.stopPropagation(); setCurrent((c) => (c - 1 + images.length) % images.length); }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition hidden sm:block"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setCurrent((c) => (c + 1) % images.length); }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 transition hidden sm:block"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
@@ -103,8 +170,11 @@ export function AdGallery({ images }: AdGalleryProps) {
       {/* Lightbox */}
       {lightboxOpen && (
         <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center select-none"
           onClick={closeLightbox}
+          onTouchStart={handleLightboxTouchStart}
+          onTouchMove={handleLightboxTouchMove}
+          onTouchEnd={handleLightboxTouchEnd}
         >
           {/* Close button */}
           <button
@@ -123,24 +193,25 @@ export function AdGallery({ images }: AdGalleryProps) {
               src={images[lightboxIndex].url}
               alt=""
               fill
-              className="object-contain"
+              className="object-contain transition-opacity duration-200"
               sizes="100vw"
               priority
+              draggable={false}
             />
           </div>
 
-          {/* Navigation arrows */}
+          {/* Navigation arrows - ascunse pe mobil */}
           {images.length > 1 && (
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); prevLightbox(); }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition hidden sm:block"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextLightbox(); }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 transition hidden sm:block"
               >
                 <ChevronRight className="h-6 w-6" />
               </button>

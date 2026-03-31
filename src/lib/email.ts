@@ -192,6 +192,100 @@ export function reportEmailHtml(
   `;
 }
 
+interface DigestAd {
+  title: string;
+  price: string;
+  imageUrl: string | null;
+  url: string;
+}
+
+interface DigestCategory {
+  name: string;
+  count: number;
+}
+
+export function weeklyDigestEmailHtml(
+  newAdsCount: number,
+  topAds: DigestAd[],
+  topCategories: DigestCategory[]
+): string {
+  const adRows = topAds
+    .map(
+      (ad) => `
+      <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #2A2A2A;">
+          <table cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              ${
+                ad.imageUrl
+                  ? `<td style="width: 80px; vertical-align: top; padding-right: 12px;">
+                      <img src="${ad.imageUrl}" alt="${ad.title}" width="80" height="60" style="border-radius: 6px; object-fit: cover; display: block;" />
+                    </td>`
+                  : ""
+              }
+              <td style="vertical-align: top;">
+                <a href="https://www.lagoana.ro${ad.url}" style="color: #EDEDED; font-size: 14px; font-weight: 600; text-decoration: none;">${ad.title}</a>
+                <p style="color: #C9A646; font-size: 14px; font-weight: bold; margin: 4px 0 0;">${ad.price}</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>`
+    )
+    .join("");
+
+  const categoryRows = topCategories
+    .map(
+      (cat) =>
+        `<span style="display: inline-block; background: #1B3A2B; color: #C9A646; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin: 3px 2px;">${cat.name} (${cat.count})</span>`
+    )
+    .join(" ");
+
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <img src="https://www.lagoana.ro/logo.png" alt="Lagoana" width="120" height="120" style="display: block; margin: 0 auto 10px;" />
+        <p style="color: #888; font-size: 14px; margin-top: 5px;">Rezumatul saptamanii</p>
+      </div>
+
+      <div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 25px; text-align: center; margin-bottom: 20px;">
+        <p style="color: #C9A646; font-size: 36px; font-weight: bold; margin: 0;">${newAdsCount}</p>
+        <p style="color: #888; font-size: 14px; margin: 5px 0 0;">anunturi noi in ultima saptamana</p>
+      </div>
+
+      ${
+        topAds.length > 0
+          ? `<div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+              <p style="color: #C9A646; font-size: 14px; font-weight: bold; margin: 0 0 12px;">Cele mai noi anunturi</p>
+              <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                ${adRows}
+              </table>
+            </div>`
+          : ""
+      }
+
+      ${
+        topCategories.length > 0
+          ? `<div style="background: #111111; border: 1px solid #2A2A2A; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+              <p style="color: #C9A646; font-size: 14px; font-weight: bold; margin: 0 0 12px;">Categorii populare saptamana aceasta</p>
+              <div>${categoryRows}</div>
+            </div>`
+          : ""
+      }
+
+      <div style="text-align: center; margin-top: 25px;">
+        <a href="https://www.lagoana.ro/anunturi" style="display: inline-block; background: #C9A646; color: #0B0B0B; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-weight: bold; font-size: 15px;">
+          Vezi toate anunturile
+        </a>
+      </div>
+
+      <p style="color: #666; font-size: 11px; text-align: center; margin-top: 30px;">
+        Primesti acest email deoarece ai cautari salvate sau favorite pe Lagoana.
+      </p>
+    </div>
+  `;
+}
+
 export function expiringAdEmailHtml(adTitle: string, adUrl: string): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #0B0B0B; color: #EDEDED; padding: 40px 30px; border-radius: 12px;">

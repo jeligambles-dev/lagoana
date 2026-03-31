@@ -101,7 +101,7 @@ export default async function HomePage() {
               return (
                 <Link
                   key={cat.id}
-                  href={`/anunturi?category=${cat.slug}`}
+                  href={`/anunturi/categorie/${cat.slug}`}
                   className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-[#1B3A2B]/30 transition group"
                 >
                   {cat.imageUrl ? (

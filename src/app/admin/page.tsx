@@ -1,34 +1,107 @@
-export const dynamic = "force-dynamic";
+"use client";
 
-import { prisma } from "@/lib/db";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, AlertTriangle, Eye } from "lucide-react";
+import { Users, FileText, AlertTriangle, Activity } from "lucide-react";
+import { LineChart, BarChart } from "@/components/admin/Charts";
 
-export default async function AdminDashboard() {
-  const [totalUsers, activeAds, pendingReports, todayAds] = await Promise.all([
-    prisma.user.count(),
-    prisma.ad.count({ where: { status: "ACTIVE" } }),
-    prisma.report.count({ where: { status: "PENDING" } }),
-    prisma.ad.count({
-      where: {
-        createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-      },
-    }),
-  ]);
+interface AnalyticsData {
+  stats: { totalActiveAds: number; totalUsers: number; pendingReports: number };
+  adsPerDay: { label: string; value: number }[];
+  usersPerDay: { label: string; value: number }[];
+  categories: { name: string; count: number }[];
+  auditLogs: {
+    id: string;
+    adminName: string;
+    action: string;
+    targetType: string;
+    targetId: string;
+    createdAt: string;
+  }[];
+}
 
-  const stats = [
-    { label: "Utilizatori", value: totalUsers, icon: Users, color: "text-blue-600 bg-blue-100" },
-    { label: "Anunturi active", value: activeAds, icon: FileText, color: "text-green-600 bg-[#1B3A2B]" },
-    { label: "Anunturi azi", value: todayAds, icon: Eye, color: "text-amber-600 bg-amber-100" },
-    { label: "Rapoarte in asteptare", value: pendingReports, icon: AlertTriangle, color: "text-red-600 bg-red-100" },
+export default function AdminDashboard() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/analytics")
+      .then((r) => r.json())
+      .then((d) => setData(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-[#EDEDED]">Dashboard</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-24 rounded-xl bg-[#111111] border border-[#2A2A2A] animate-pulse" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-72 rounded-xl bg-[#111111] border border-[#2A2A2A] animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-xl font-bold text-[#EDEDED]">Dashboard</h2>
+        <p className="text-[#888]">Eroare la incarcarea datelor.</p>
+      </div>
+    );
+  }
+
+  const statCards = [
+    {
+      label: "Anunturi active",
+      value: data.stats.totalActiveAds,
+      icon: FileText,
+      color: "text-green-500 bg-[#1B3A2B]",
+    },
+    {
+      label: "Utilizatori totali",
+      value: data.stats.totalUsers,
+      icon: Users,
+      color: "text-[#C8A951] bg-[#2A2517]",
+    },
+    {
+      label: "Rapoarte in asteptare",
+      value: data.stats.pendingReports,
+      icon: AlertTriangle,
+      color: "text-red-500 bg-[#3A1B1B]",
+    },
   ];
+
+  const actionLabels: Record<string, string> = {
+    remove: "Sters",
+    restore: "Restaurat",
+    spotlight: "Spotlight",
+    ban: "Banat",
+    approve: "Aprobat",
+    delete: "Eliminat",
+  };
+
+  const targetLabels: Record<string, string> = {
+    ad: "anunt",
+    user: "utilizator",
+    report: "raport",
+  };
 
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-[#EDEDED]">Dashboard</h2>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {statCards.map((stat) => (
           <Card key={stat.label}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -45,63 +118,79 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      {/* Recent activity */}
+      {/* Charts row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Ads per day */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-[#EDEDED]">Anunturi noi pe zi (ultimele 30 zile)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LineChart data={data.adsPerDay} color="#C8A951" height={200} />
+          </CardContent>
+        </Card>
+
+        {/* Users per day */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-[#EDEDED]">Utilizatori noi pe zi (ultimele 30 zile)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LineChart data={data.usersPerDay} color="#4DABF7" height={200} />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Categories bar chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Anunturi recente</CardTitle>
+          <CardTitle className="text-sm text-[#EDEDED]">Cele mai populare categorii</CardTitle>
         </CardHeader>
         <CardContent>
-          <RecentAds />
+          <BarChart
+            data={data.categories.map((c) => ({ label: c.name, value: c.count }))}
+            color="#C8A951"
+            height={240}
+          />
         </CardContent>
       </Card>
-    </div>
-  );
-}
 
-async function RecentAds() {
-  const ads = await prisma.ad.findMany({
-    take: 10,
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: { select: { name: true, email: true } },
-      category: { select: { name: true } },
-    },
-  });
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-[#2A2A2A] text-left text-[#888]">
-            <th className="pb-2 font-medium">Titlu</th>
-            <th className="pb-2 font-medium">Utilizator</th>
-            <th className="pb-2 font-medium">Categorie</th>
-            <th className="pb-2 font-medium">Status</th>
-            <th className="pb-2 font-medium">Pret</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ads.map((ad) => (
-            <tr key={ad.id} className="border-b border-[#1E1E1E]">
-              <td className="py-2 font-medium text-[#EDEDED] max-w-48 truncate">{ad.title}</td>
-              <td className="py-2 text-[#888]">{ad.user.name || ad.user.email}</td>
-              <td className="py-2 text-[#888]">{ad.category.name}</td>
-              <td className="py-2">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                  ad.status === "ACTIVE" ? "bg-[#1B3A2B] text-green-700" :
-                  ad.status === "REMOVED" ? "bg-red-100 text-red-700" :
-                  "bg-[#1E1E1E] text-[#888]"
-                }`}>
-                  {ad.status}
-                </span>
-              </td>
-              <td className="py-2 text-[#888]">
-                {ad.price ? `${ad.price.toLocaleString("ro-RO")} RON` : "-"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Recent activity feed */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm text-[#EDEDED] flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Activitate recenta
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {data.auditLogs.length === 0 ? (
+            <p className="text-[#888] text-sm">Nicio activitate recenta.</p>
+          ) : (
+            <div className="space-y-3">
+              {data.auditLogs.map((log) => (
+                <div key={log.id} className="flex items-start gap-3 text-sm border-b border-[#1E1E1E] pb-3 last:border-0">
+                  <div className="w-2 h-2 rounded-full bg-[#C8A951] mt-1.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[#EDEDED]">
+                      <span className="font-medium">{log.adminName}</span>{" "}
+                      a executat{" "}
+                      <span className="text-[#C8A951] font-medium">
+                        {actionLabels[log.action] || log.action}
+                      </span>{" "}
+                      pe {targetLabels[log.targetType] || log.targetType}{" "}
+                      <span className="text-[#888] font-mono text-xs">{log.targetId.slice(0, 8)}...</span>
+                    </p>
+                    <p className="text-[#666] text-xs mt-0.5">
+                      {new Date(log.createdAt).toLocaleString("ro-RO")}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

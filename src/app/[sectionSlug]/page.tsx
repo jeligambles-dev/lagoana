@@ -36,9 +36,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Sectiune negasita" };
   }
 
+  const description =
+    section.description ||
+    `Articole si ghiduri din sectiunea ${section.name} pe Lagoana — piata ta de echipament de vanatoare.`;
+
   return {
     title: section.name,
-    description: section.description || `Articole din sectiunea ${section.name}`,
+    description,
+    openGraph: {
+      title: `${section.name} | Lagoana`,
+      description,
+      type: "website",
+      url: `https://www.lagoana.ro/${section.slug}`,
+      siteName: "Lagoana",
+    },
+    alternates: {
+      canonical: `https://www.lagoana.ro/${section.slug}`,
+    },
   };
 }
 

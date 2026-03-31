@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   LayoutDashboard, FileText, Users, FolderTree, FileStack,
-  AlertTriangle, ClipboardList, ShieldCheck, Store, Image,
+  AlertTriangle, ClipboardList, ShieldCheck, Store, Image, Mail,
 } from "lucide-react";
 
 const adminLinks = [
@@ -14,6 +14,7 @@ const adminLinks = [
   { href: "/admin/sectiuni", icon: FileStack, label: "Sectiuni" },
   { href: "/admin/rapoarte", icon: AlertTriangle, label: "Rapoarte" },
   { href: "/admin/audit", icon: ClipboardList, label: "Audit log" },
+  { href: "/admin/email-templates", icon: Mail, label: "Email templates" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

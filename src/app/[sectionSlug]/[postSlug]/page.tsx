@@ -32,6 +32,7 @@ async function getPost(sectionSlug: string, postSlug: string) {
       author: { select: { name: true } },
       section: { select: { name: true, slug: true } },
     },
+    // updatedAt is included by default
   });
 
   return post;
@@ -45,9 +46,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Articol negasit" };
   }
 
+  const description = post.body.replace(/<[^>]*>/g, "").slice(0, 160);
+  const url = `https://www.lagoana.ro/${sectionSlug}/${postSlug}`;
+
   return {
     title: post.title,
-    description: post.body.replace(/<[^>]*>/g, "").slice(0, 160),
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      url,
+      siteName: "Lagoana",
+      ...(post.publishedAt && { publishedTime: new Date(post.publishedAt).toISOString() }),
+      ...(post.author.name && { authors: [post.author.name] }),
+      ...(post.coverImageUrl && {
+        images: [{ url: post.coverImageUrl, alt: post.title }],
+      }),
+    },
+    alternates: {
+      canonical: url,
+    },
   };
 }
 
@@ -59,8 +78,30 @@ export default async function PostPage({ params }: Props) {
     notFound();
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    ...(post.coverImageUrl && { image: post.coverImageUrl }),
+    ...(post.publishedAt && { datePublished: new Date(post.publishedAt).toISOString() }),
+    dateModified: new Date(post.updatedAt).toISOString(),
+    author: {
+      "@type": "Person",
+      name: post.author.name || "Lagoana",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Lagoana",
+      logo: { "@type": "ImageObject", url: "https://www.lagoana.ro/logo.png" },
+    },
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Back link */}
       <Link
         href={`/${sectionSlug}`}

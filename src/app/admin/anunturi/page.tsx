@@ -1,8 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
-import { Badge } from "@/components/ui/badge";
-import { AdminAdActions } from "@/components/admin/AdminAdActions";
+import { BulkAdTable } from "@/components/admin/BulkAdTable";
 
 interface Props {
   searchParams: Promise<{ q?: string; status?: string; page?: string }>;
@@ -36,6 +35,16 @@ export default async function AdminAdsPage({ searchParams }: Props) {
     prisma.ad.count({ where }),
   ]);
 
+  // Serialize for client component (convert Decimal/Date to plain types)
+  const serializedAds = ads.map((ad) => ({
+    id: ad.id,
+    title: ad.title,
+    price: ad.price,
+    status: ad.status,
+    user: { name: ad.user.name, email: ad.user.email },
+    category: { name: ad.category.name },
+  }));
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-[#EDEDED]">Gestionare anunturi</h2>
@@ -64,44 +73,7 @@ export default async function AdminAdsPage({ searchParams }: Props) {
         </button>
       </form>
 
-      <div className="bg-[#111111] rounded-xl border border-[#2A2A2A] overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[#2A2A2A] text-left text-[#888] bg-[#111111]">
-              <th className="px-4 py-3 font-medium">Titlu</th>
-              <th className="px-4 py-3 font-medium">Utilizator</th>
-              <th className="px-4 py-3 font-medium">Categorie</th>
-              <th className="px-4 py-3 font-medium">Pret</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Actiuni</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ads.map((ad) => (
-              <tr key={ad.id} className="border-b border-[#1E1E1E] hover:bg-[#1E1E1E]">
-                <td className="px-4 py-3 font-medium text-[#EDEDED] max-w-56 truncate">{ad.title}</td>
-                <td className="px-4 py-3 text-[#888]">{ad.user.name || ad.user.email}</td>
-                <td className="px-4 py-3 text-[#888]">{ad.category.name}</td>
-                <td className="px-4 py-3 text-[#888]">
-                  {ad.price ? `${ad.price.toLocaleString("ro-RO")} RON` : "-"}
-                </td>
-                <td className="px-4 py-3">
-                  <Badge className={
-                    ad.status === "ACTIVE" ? "bg-[#1B3A2B] text-green-700" :
-                    ad.status === "REMOVED" ? "bg-red-100 text-red-700" :
-                    "bg-[#1E1E1E] text-[#888]"
-                  }>
-                    {ad.status}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <AdminAdActions adId={ad.id} status={ad.status} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <BulkAdTable ads={serializedAds} />
 
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-[#888]">
