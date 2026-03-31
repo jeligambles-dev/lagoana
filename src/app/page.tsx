@@ -93,7 +93,7 @@ export default async function HomePage() {
       <HeroSlider banners={banners} />
 
       {/* Categories */}
-      <section className="max-w-7xl mx-auto px-4 -mt-8 relative z-10">
+      <section className="max-w-7xl mx-auto px-4 mt-6 sm:mt-8 relative z-10">
         <div className="bg-[#111111] rounded-xl border border-[#2A2A2A] p-6">
           <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-4">
             {categories.map((cat) => {
