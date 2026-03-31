@@ -33,22 +33,27 @@ import {
   Eye,
   Shirt,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export function Header() {
   const { data: session } = useSession();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     function onScroll() {
-      // Hysteresis: scroll down past 150 to collapse, scroll up past 50 to expand
-      // Prevents flickering at the threshold
-      setScrolled((prev) => {
-        if (prev) return window.scrollY > 50;
-        return window.scrollY > 150;
-      });
+      const y = window.scrollY;
+      // Only collapse/expand based on scroll direction, not absolute position
+      // This prevents the feedback loop where hiding the header changes scroll position
+      if (y > lastScrollY.current && y > 200) {
+        setScrolled(true);
+      } else if (y < lastScrollY.current && y < 100) {
+        setScrolled(false);
+      }
+      lastScrollY.current = y;
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -62,34 +67,39 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50">
-      {/* Main header - Logo + Search + CTA (desktop only, hidden when scrolled) */}
-      {!scrolled && (
-        <div className="hidden sm:block bg-[#0F1111]">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-6">
-            <Link href="/" className="shrink-0">
-              <Image
-                src="/logo.png"
-                alt="Lagoana"
-                width={500}
-                height={500}
-                className="h-44 w-44 sm:h-56 sm:w-56"
-                priority
-              />
+    <>
+    {/* Spacer to prevent content jump when header collapses */}
+    <div className={`hidden sm:block transition-all duration-300 ${scrolled ? "h-0" : "h-[260px]"}`} />
+
+    <header className={`sticky top-0 z-50 ${scrolled ? "" : "sm:-mt-[260px]"}`}>
+      {/* Main header - Logo + Search + CTA (desktop only) */}
+      <div
+        ref={headerRef}
+        className={`hidden sm:block bg-[#0F1111] transition-all duration-300 ${scrolled ? "max-h-0 overflow-hidden opacity-0" : "max-h-[300px] opacity-100"}`}
+      >
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-6">
+          <Link href="/" className="shrink-0">
+            <Image
+              src="/logo.png"
+              alt="Lagoana"
+              width={500}
+              height={500}
+              className="h-44 w-44 sm:h-56 sm:w-56"
+              priority
+            />
+          </Link>
+          <SearchAutocomplete />
+          <div className="flex flex-col items-center gap-2">
+            <Button render={<Link href="/publica" />} className="bg-gold text-[#0B0B0B] hover:bg-gold-light font-bold text-base h-12 px-6">
+              <Plus className="h-5 w-5 mr-1.5" />
+              Publica anunt
+            </Button>
+            <Link href="/armurieri" className="text-xs text-[#888] hover:text-gold transition flex items-center gap-1">
+              <Store className="h-3 w-3" /> Armurieri autorizati
             </Link>
-            <SearchAutocomplete />
-            <div className="flex flex-col items-center gap-2">
-              <Button render={<Link href="/publica" />} className="bg-gold text-[#0B0B0B] hover:bg-gold-light font-bold text-base h-12 px-6">
-                <Plus className="h-5 w-5 mr-1.5" />
-                Publica anunt
-              </Button>
-              <Link href="/armurieri" className="text-xs text-[#888] hover:text-gold transition flex items-center gap-1">
-                <Store className="h-3 w-3" /> Armurieri autorizati
-              </Link>
-            </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Compact sticky bar - categories + account links (desktop only) */}
       <div className={`hidden sm:block transition-all duration-300 ${scrolled ? "bg-[#0F1111]" : "bg-[#1B3A2B]"}`}>
@@ -180,6 +190,7 @@ export function Header() {
         <SearchAutocomplete />
       </div>
     </header>
+    </>
   );
 }
 
