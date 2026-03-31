@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { BulkAdTable } from "@/components/admin/BulkAdTable";
 
@@ -47,7 +48,15 @@ export default async function AdminAdsPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-[#EDEDED]">Gestionare anunturi</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-[#EDEDED]">Gestionare anunturi</h2>
+        <Link
+          href="/admin/anunturi/nou"
+          className="inline-flex items-center gap-1.5 h-10 px-4 bg-gold text-white rounded-md text-sm font-medium hover:bg-gold-light transition"
+        >
+          + Adauga anunt
+        </Link>
+      </div>
 
       {/* Search & filters */}
       <form className="flex gap-3">
