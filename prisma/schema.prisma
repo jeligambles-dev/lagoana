@@ -85,6 +85,12 @@ model User {
   reviewsGiven   Review[]       @relation("ReviewAuthor")
   reviewsReceived Review[]      @relation("ReviewTarget")
   adViews        AdView[]
+
+  // Referral system
+  referralCode   String?        @unique
+  referredBy     String?        // userId of the referrer
+  referralsGiven Referral[]     @relation("Referrer")
+  referralsReceived Referral[]  @relation("Referred")
 }
 
 model Account {
@@ -434,6 +440,30 @@ model Banner {
   updatedAt   DateTime @updatedAt
 
   @@index([isActive, startsAt, expiresAt])
+}
+
+// ─── Referrals ─────────────────────────────────────────
+
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referredId  String   @unique
+  rewardGiven Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  referrer    User     @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred    User     @relation("Referred", fields: [referredId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+}
+
+// ─── Newsletter ────────────────────────────────────────
+
+model Newsletter {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  subscribedAt DateTime @default(now())
+  isActive     Boolean  @default(true)
 }
 
 // ─── Admin Audit Log ───────────────────────────────────

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { COUNTIES } from "@/lib/constants";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Copy, Share2, Users, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { VerificationSection } from "@/components/ads/VerificationSection";
 import { IdVerificationSection } from "@/components/ads/IdVerificationSection";
@@ -29,6 +29,9 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referralStats, setReferralStats] = useState({ totalReferrals: 0, pendingRewards: 0 });
+  const [generatingCode, setGeneratingCode] = useState(false);
 
   useEffect(() => {
     fetch("/api/profile")
@@ -36,6 +39,15 @@ export default function ProfilePage() {
       .then((data) => {
         setProfile(data);
         setLoading(false);
+      });
+    fetch("/api/referral")
+      .then((r) => r.json())
+      .then((data) => {
+        setReferralCode(data.referralCode);
+        setReferralStats({
+          totalReferrals: data.totalReferrals || 0,
+          pendingRewards: data.pendingRewards || 0,
+        });
       });
   }, []);
 
@@ -156,6 +168,103 @@ export default function ProfilePage() {
             {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Salveaza
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Referral Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Users className="h-5 w-5 text-gold" />
+            Invita prieteni
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-[#888]">
+            Invita-ti prietenii pe Lagoana si primesti un anunt promovat gratuit dupa 3 invitati!
+          </p>
+
+          {referralCode ? (
+            <>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={`${typeof window !== "undefined" ? window.location.origin : ""}/cont/inregistrare?ref=${referralCode}`}
+                  readOnly
+                  className="bg-[#111111] text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${window.location.origin}/cont/inregistrare?ref=${referralCode}`
+                    );
+                    toast.success("Link copiat!");
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: "Lagoana - Piata de vanatoare",
+                        text: "Inregistreaza-te pe Lagoana!",
+                        url: `${window.location.origin}/cont/inregistrare?ref=${referralCode}`,
+                      });
+                    } else {
+                      navigator.clipboard.writeText(
+                        `${window.location.origin}/cont/inregistrare?ref=${referralCode}`
+                      );
+                      toast.success("Link copiat!");
+                    }
+                  }}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-[#111111] border border-[#2A2A2A] rounded-lg p-4 text-center">
+                  <p className="text-2xl font-bold text-gold">{referralStats.totalReferrals}</p>
+                  <p className="text-sm text-[#888]">Total invitati</p>
+                </div>
+                <div className="bg-[#111111] border border-[#2A2A2A] rounded-lg p-4 text-center">
+                  <p className="text-2xl font-bold text-gold">{referralStats.pendingRewards}</p>
+                  <p className="text-sm text-[#888]">Recompense in asteptare</p>
+                </div>
+              </div>
+
+              {referralStats.pendingRewards >= 3 && (
+                <div className="flex items-center gap-2 bg-green-900/20 text-green-400 p-3 rounded-md text-sm">
+                  <Gift className="h-4 w-4" />
+                  Ai o recompensa disponibila! Urmatorul anunt va fi promovat gratuit 7 zile.
+                </div>
+              )}
+            </>
+          ) : (
+            <Button
+              onClick={async () => {
+                setGeneratingCode(true);
+                const res = await fetch("/api/referral", { method: "POST" });
+                const data = await res.json();
+                setReferralCode(data.referralCode);
+                setGeneratingCode(false);
+                toast.success("Codul de referral a fost generat!");
+              }}
+              disabled={generatingCode}
+              className="bg-gold hover:bg-gold-light text-[#0B0B0B]"
+            >
+              {generatingCode ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Users className="h-4 w-4 mr-2" />
+              )}
+              Genereaza link de invitare
+            </Button>
+          )}
         </CardContent>
       </Card>
 

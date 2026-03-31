@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { rateLimitByIp } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
+  // Rate limit: 30 cereri per minut per IP
+  const limited = rateLimitByIp(request, "search", 30, 60 * 1000);
+  if (limited) return limited;
+
   const url = new URL(request.url);
   const q = url.searchParams.get("q")?.trim();
 

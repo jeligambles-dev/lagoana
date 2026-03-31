@@ -15,6 +15,7 @@ import {
   ArrowLeft, ArrowRight, Upload, X, Check, Loader2, AlertTriangle,
 } from "lucide-react";
 import { COUNTIES } from "@/lib/constants";
+import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 
 const categoryIcons: Record<string, React.ElementType> = {
   "arme-de-foc": Crosshair,
@@ -97,6 +98,8 @@ export default function PublishPage() {
   const [city, setCity] = useState("");
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -132,6 +135,36 @@ export default function PublishPage() {
 
   function removeImage(index: number) {
     setImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleDragStart(index: number) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    setDragOverIndex(index);
+  }
+
+  function handleDrop(index: number) {
+    if (dragIndex === null || dragIndex === index) {
+      setDragIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+    setImages((prev) => {
+      const updated = [...prev];
+      const [moved] = updated.splice(dragIndex, 1);
+      updated.splice(index, 0, moved);
+      return updated;
+    });
+    setDragIndex(null);
+    setDragOverIndex(null);
+  }
+
+  function handleDragEnd() {
+    setDragIndex(null);
+    setDragOverIndex(null);
   }
 
   function validateStep1(): boolean {
@@ -366,11 +399,31 @@ export default function PublishPage() {
           </div>
 
           <div>
-            <Label className="mb-2 block">Fotografii (max. 10)</Label>
+            <Label className="mb-1 block">Fotografii (max. 10)</Label>
+            <p className="text-xs text-[#888] mb-2">Trage pentru a reordona. Prima imagine va fi coperta anuntului.</p>
             <div className="grid grid-cols-5 gap-3">
               {images.map((img, i) => (
-                <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-[#2A2A2A]">
+                <div
+                  key={i}
+                  draggable
+                  onDragStart={() => handleDragStart(i)}
+                  onDragOver={(e) => handleDragOver(e, i)}
+                  onDrop={() => handleDrop(i)}
+                  onDragEnd={handleDragEnd}
+                  className={`relative aspect-square rounded-lg overflow-hidden border-2 cursor-grab active:cursor-grabbing transition-all ${
+                    dragIndex === i
+                      ? "opacity-40 border-gold scale-95"
+                      : dragOverIndex === i
+                      ? "border-gold border-dashed"
+                      : "border-[#2A2A2A]"
+                  }`}
+                >
                   <img src={img.previewUrl} alt="" className="w-full h-full object-cover" />
+                  {i === 0 && (
+                    <span className="absolute bottom-1 left-1 bg-gold text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                      Coperta
+                    </span>
+                  )}
                   <button
                     onClick={() => removeImage(i)}
                     className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5"
@@ -408,7 +461,7 @@ export default function PublishPage() {
               <select
                 id="county"
                 value={county}
-                onChange={(e) => setCounty(e.target.value)}
+                onChange={(e) => { setCounty(e.target.value); setCity(""); }}
                 className="w-full h-10 rounded-md border border-[#2A2A2A] bg-[#111111] px-3 text-sm"
               >
                 <option value="">Selecteaza...</option>
@@ -419,11 +472,10 @@ export default function PublishPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">Oras</Label>
-              <Input
-                id="city"
+              <CityAutocomplete
+                county={county}
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="Oras"
+                onChange={setCity}
               />
             </div>
           </div>

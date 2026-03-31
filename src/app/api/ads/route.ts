@@ -34,6 +34,32 @@ export async function POST(request: Request) {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + AD_EXPIRY_DAYS);
 
+  // Check referral reward: 3+ referrals = free promoted ad
+  let promotedUntil: Date | undefined;
+  const totalReferrals = await prisma.referral.count({
+    where: { referrerId: session.user.id },
+  });
+  if (totalReferrals >= 3) {
+    // Check if there are unrewarded referrals
+    const unrewarded = await prisma.referral.count({
+      where: { referrerId: session.user.id, rewardGiven: false },
+    });
+    if (unrewarded >= 3) {
+      promotedUntil = new Date();
+      promotedUntil.setDate(promotedUntil.getDate() + 7);
+      // Mark 3 referrals as rewarded
+      const toReward = await prisma.referral.findMany({
+        where: { referrerId: session.user.id, rewardGiven: false },
+        take: 3,
+        select: { id: true },
+      });
+      await prisma.referral.updateMany({
+        where: { id: { in: toReward.map((r) => r.id) } },
+        data: { rewardGiven: true },
+      });
+    }
+  }
+
   const ad = await prisma.ad.create({
     data: {
       userId: session.user.id,
@@ -48,6 +74,7 @@ export async function POST(request: Request) {
       city,
       status: "ACTIVE",
       expiresAt,
+      promotedUntil: promotedUntil || undefined,
       images: images?.length
         ? {
             create: images.map((img: { url: string }, i: number) => ({

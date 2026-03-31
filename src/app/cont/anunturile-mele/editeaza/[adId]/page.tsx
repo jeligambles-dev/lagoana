@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Upload, X, Loader2, Save } from "lucide-react";
 import { COUNTIES } from "@/lib/constants";
+import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -289,7 +290,7 @@ export default function EditAdPage() {
                 <select
                   id="county"
                   value={county}
-                  onChange={(e) => setCounty(e.target.value)}
+                  onChange={(e) => { setCounty(e.target.value); setCity(""); }}
                   className="w-full h-10 rounded-md border border-[#2A2A2A] bg-[#0B0B0B] px-3 text-sm text-[#EDEDED]"
                 >
                   <option value="">Selecteaza...</option>
@@ -300,12 +301,11 @@ export default function EditAdPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="city" className="text-[#EDEDED]">Oras</Label>
-                <Input
-                  id="city"
+                <CityAutocomplete
+                  county={county}
                   value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Oras"
-                  className="bg-[#0B0B0B] border-[#2A2A2A] text-[#EDEDED]"
+                  onChange={setCity}
+                  className="bg-[#0B0B0B]"
                 />
               </div>
             </div>

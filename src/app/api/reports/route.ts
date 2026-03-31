@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { sendEmail, reportEmailHtml } from "@/lib/email";
+import { rateLimitByIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Neautorizat" }, { status: 401 });
   }
+
+  // Rate limit: 10 rapoarte per oră per IP
+  const limited = rateLimitByIp(request, "report", 10, 60 * 60 * 1000);
+  if (limited) return limited;
 
   const { adId, reason, details } = await request.json();
 

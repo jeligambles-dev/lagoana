@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import sharp from "sharp";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -31,11 +32,58 @@ export async function POST(request: Request) {
   const uploadDir = path.join(process.cwd(), "public", "uploads");
   await mkdir(uploadDir, { recursive: true });
 
-  const ext = file.type.split("/")[1] || "jpg";
-  const filename = `${session.user.id}-${Date.now()}.${ext}`;
+  // Resize to max 1920px on longest side, preserving aspect ratio
+  const image = sharp(buffer);
+  const metadata = await image.metadata();
+  const maxDimension = 1920;
+
+  let resized = image;
+  if (
+    (metadata.width && metadata.width > maxDimension) ||
+    (metadata.height && metadata.height > maxDimension)
+  ) {
+    resized = image.resize({
+      width: maxDimension,
+      height: maxDimension,
+      fit: "inside",
+      withoutEnlargement: true,
+    });
+  }
+
+  // Get dimensions of the resized image for watermark positioning
+  const resizedBuffer = await resized.toBuffer();
+  const resizedMeta = await sharp(resizedBuffer).metadata();
+  const imgWidth = resizedMeta.width || 1920;
+  const imgHeight = resizedMeta.height || 1080;
+
+  // Create a semi-transparent watermark SVG
+  const watermarkText = "lagoana.ro";
+  const fontSize = Math.max(16, Math.round(imgWidth * 0.025));
+  const padding = Math.round(fontSize * 0.8);
+  const watermarkSvg = Buffer.from(
+    `<svg width="${imgWidth}" height="${imgHeight}" xmlns="http://www.w3.org/2000/svg">
+      <text
+        x="${imgWidth - padding}"
+        y="${imgHeight - padding}"
+        font-family="sans-serif"
+        font-size="${fontSize}"
+        fill="white"
+        fill-opacity="0.3"
+        text-anchor="end"
+      >${watermarkText}</text>
+    </svg>`
+  );
+
+  // Apply watermark and convert to WebP with quality 80
+  const processedBuffer = await sharp(resizedBuffer)
+    .composite([{ input: watermarkSvg, top: 0, left: 0 }])
+    .webp({ quality: 80 })
+    .toBuffer();
+
+  const filename = `${session.user.id}-${Date.now()}.webp`;
   const filepath = path.join(uploadDir, filename);
 
-  await writeFile(filepath, buffer);
+  await writeFile(filepath, processedBuffer);
 
   return NextResponse.json({
     url: `/api/uploads/${filename}`,

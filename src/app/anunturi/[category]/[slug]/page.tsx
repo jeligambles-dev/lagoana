@@ -27,6 +27,36 @@ interface Props {
   params: Promise<{ category: string; slug: string }>;
 }
 
+async function getCategoryPriceStats(categoryId: string, adId: string) {
+  const otherAds = await prisma.ad.findMany({
+    where: {
+      categoryId,
+      status: "ACTIVE",
+      id: { not: adId },
+      price: { not: null, gt: 0 },
+    },
+    select: { price: true },
+  });
+
+  if (otherAds.length < 3) return null;
+
+  const prices = otherAds.map((a) => a.price as number);
+  const avg = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+
+  return { average: Math.round(avg), count: prices.length };
+}
+
+function getPriceComparison(price: number, average: number) {
+  const ratio = price / average;
+  if (ratio <= 0.85) {
+    return { label: "Sub media categoriei", color: "text-green-400", bg: "bg-green-900/30" };
+  }
+  if (ratio >= 1.15) {
+    return { label: "Peste media categoriei", color: "text-orange-400", bg: "bg-orange-900/30" };
+  }
+  return { label: "Pret mediu", color: "text-[#888]", bg: "bg-[#1E1E1E]" };
+}
+
 async function getAd(slug: string) {
   const ad = await prisma.ad.findUnique({
     where: { slug },
@@ -54,7 +84,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!ad) return { title: "Anunt negasit" };
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.lagoana.ro";
-  const imageUrl = ad.images[0]?.url ? `${baseUrl}${ad.images[0].url}` : `${baseUrl}/logo.png`;
+  const ogImageUrl = `${baseUrl}/api/og/${ad.id}`;
 
   return {
     title: ad.title,
@@ -64,7 +94,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: ad.description.substring(0, 160),
       url: `${baseUrl}/anunturi/${ad.category.slug}/${ad.slug}`,
       siteName: "Lagoana",
-      images: [{ url: imageUrl, width: 800, height: 600 }],
+      images: [{ url: ogImageUrl, width: 1200, height: 630 }],
       locale: "ro_RO",
       type: "website",
     },
@@ -72,7 +102,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: ad.title,
       description: ad.description.substring(0, 160),
-      images: [imageUrl],
+      images: [ogImageUrl],
     },
   };
 }
@@ -83,6 +113,14 @@ export default async function AdDetailPage({ params }: Props) {
   if (!ad) notFound();
 
   const session = await auth();
+
+  // Price comparison stats
+  const priceStats = ad.price != null && ad.price > 0
+    ? await getCategoryPriceStats(ad.categoryId, ad.id)
+    : null;
+  const priceComparison = priceStats && ad.price != null
+    ? getPriceComparison(ad.price, priceStats.average)
+    : null;
 
   // Increment view count + track daily analytics
   const today = new Date();
@@ -211,6 +249,17 @@ export default async function AdDetailPage({ params }: Props) {
                 <span className="text-sm text-[#888]">negociabil</span>
               )}
             </div>
+
+            {priceComparison && priceStats && (
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className={`text-xs font-medium px-2 py-0.5 rounded ${priceComparison.bg} ${priceComparison.color}`}>
+                  {priceComparison.label}
+                </span>
+                <span className="text-xs text-[#666]">
+                  Media: {priceStats.average.toLocaleString("ro-RO")} {ad.currency} ({priceStats.count} anunturi)
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center gap-4 mt-3 text-sm text-[#888]">
               <span className="flex items-center gap-1">

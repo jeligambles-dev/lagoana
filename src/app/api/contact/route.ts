@@ -1,7 +1,12 @@
 import { NextRequest } from "next/server";
 import { sendEmail } from "@/lib/email";
+import { rateLimitByIp } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 5 cereri per oră per IP
+  const limited = rateLimitByIp(request, "contact", 5, 60 * 60 * 1000);
+  if (limited) return limited;
+
   try {
     const { name, email, subject, message } = await request.json();
 

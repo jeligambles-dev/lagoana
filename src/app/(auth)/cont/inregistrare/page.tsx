@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import { Mail } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get("ref") || "";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +42,7 @@ export default function RegisterPage() {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, referralCode: refCode || undefined }),
     });
 
     if (!res.ok) {
@@ -77,7 +79,14 @@ export default function RegisterPage() {
         <CardContent className="space-y-4">
 
 
+          {refCode && (
+            <p className="text-sm text-green-500 bg-green-900/20 p-3 rounded-md text-center">
+              Ai fost invitat de un prieten! Creeaza-ti cont pentru a continua.
+            </p>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
+            <input type="hidden" name="referralCode" value={refCode} />
             {error && (
               <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
                 {error}
