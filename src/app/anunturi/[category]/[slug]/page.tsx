@@ -13,6 +13,7 @@ import { ContactButton } from "@/components/ads/ContactButton";
 import { FavoriteButton } from "@/components/ads/FavoriteButton";
 import { ReportButton } from "@/components/ads/ReportButton";
 import { ShareButtons } from "@/components/ads/ShareButtons";
+import { SellerBadges } from "@/components/ads/SellerBadges";
 import { AdCard } from "@/components/ads/AdCard";
 import { ReviewSection, SellerRatingBadge } from "@/components/ads/ReviewSection";
 import { PhoneButton } from "@/components/ads/PhoneButton";
@@ -337,6 +338,7 @@ export default async function AdDetailPage({ params }: Props) {
               </Link>
 
               <SellerRatingBadge sellerId={ad.userId} />
+              <SellerBadges userId={ad.userId} compact />
 
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-[#888]">{ad.user._count.ads} anunturi active</span>

@@ -17,7 +17,7 @@ export async function GET(
     where: { id: adId },
     include: {
       images: { orderBy: { position: "asc" } },
-      category: { select: { id: true, name: true, slug: true } },
+      category: { select: { id: true, name: true, slug: true, parentId: true } },
       attributes: true,
     },
   });

@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { User, FileText, Heart, MessageSquare, Bell, BarChart3 } from "lucide-react";
+import { User, FileText, FileEdit, Heart, MessageSquare, Bell, BarChart3 } from "lucide-react";
 
 const sidebarLinks = [
   { href: "/cont/profil", icon: User, label: "Profilul meu" },
   { href: "/cont/anunturile-mele", icon: FileText, label: "Anunturile mele" },
+  { href: "/cont/ciorne", icon: FileEdit, label: "Ciorne" },
   { href: "/cont/analytics", icon: BarChart3, label: "Statistici" },
   { href: "/cont/favorite", icon: Heart, label: "Favorite" },
   { href: "/cont/mesaje", icon: MessageSquare, label: "Mesaje" },

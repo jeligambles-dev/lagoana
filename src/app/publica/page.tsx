@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Crosshair, Target, Eye, Sword, Shirt, Settings, Dog, MapPin,
-  ArrowLeft, ArrowRight, Upload, X, Check, Loader2, AlertTriangle,
+  ArrowLeft, ArrowRight, Upload, X, Check, Loader2, AlertTriangle, Save,
 } from "lucide-react";
 import { COUNTIES } from "@/lib/constants";
 import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
@@ -45,13 +45,17 @@ interface UploadedImage {
 
 export default function PublishPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const draftParam = searchParams.get("draft");
   const { data: session, status: sessionStatus } = useSession();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState("");
   const [userPhone, setUserPhone] = useState<string | null>(null);
   const [phoneChecked, setPhoneChecked] = useState(false);
+  const [draftId, setDraftId] = useState<string | null>(draftParam);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -107,6 +111,37 @@ export default function PublishPage() {
       .then(setCategories)
       .catch(() => {});
   }, []);
+
+  // Load draft data if ?draft=adId is present
+  useEffect(() => {
+    if (!draftParam) return;
+    fetch(`/api/ads/${draftParam}`)
+      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+      .then((ad) => {
+        setTitle(ad.title || "");
+        setDescription(ad.description || "");
+        setCondition(ad.condition || "USED");
+        setPrice(ad.price ? String(ad.price) : "");
+        setIsNegotiable(ad.isNegotiable || false);
+        setCounty(ad.county || "");
+        setCity(ad.city || "");
+        setDraftId(ad.id);
+        if (ad.categoryId) {
+          // Check if it's a subcategory
+          if (ad.category?.parentId) {
+            setSelectedCategoryId(ad.category.parentId);
+            setSelectedSubcategoryId(ad.categoryId);
+          } else {
+            setSelectedCategoryId(ad.categoryId);
+          }
+          if (ad.category?.slug) setSelectedCategorySlug(ad.category.slug);
+        }
+        if (ad.images?.length) {
+          setImages(ad.images.map((img: { url: string }) => ({ url: img.url, previewUrl: img.url })));
+        }
+      })
+      .catch(() => {});
+  }, [draftParam]);
 
   const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
 
@@ -195,6 +230,47 @@ export default function PublishPage() {
     return true;
   }
 
+  async function handleSaveDraft() {
+    if (!title.trim()) {
+      setError("Titlul este obligatoriu chiar si pentru ciorne.");
+      return;
+    }
+    setSavingDraft(true);
+    setError("");
+
+    const res = await fetch("/api/ads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title,
+        description,
+        categoryId: selectedSubcategoryId || selectedCategoryId || undefined,
+        condition,
+        price: price || null,
+        isNegotiable,
+        county,
+        city,
+        images: images.map((img) => ({ url: img.url })),
+        status: "DRAFT",
+        draftId: draftId || undefined,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error || "Eroare la salvarea ciornei.");
+      setSavingDraft(false);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.id && !draftId) {
+      setDraftId(data.id);
+    }
+    setSavingDraft(false);
+    router.push("/cont/ciorne");
+  }
+
   async function handlePublish() {
     setLoading(true);
     setError("");
@@ -212,6 +288,7 @@ export default function PublishPage() {
         county,
         city,
         images: images.map((img) => ({ url: img.url })),
+        draftId: draftId || undefined,
       }),
     });
 
@@ -359,7 +436,19 @@ export default function PublishPage() {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={handleSaveDraft}
+              disabled={savingDraft}
+            >
+              {savingDraft ? (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-1" />
+              )}
+              Salveaza ca ciorna
+            </Button>
             <Button
               onClick={() => { setError(""); if (validateStep1()) setStep(2); }}
               className="bg-gold hover:bg-gold-light"
@@ -480,16 +569,30 @@ export default function PublishPage() {
             </div>
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <Button variant="outline" onClick={() => { setError(""); setStep(1); }}>
               <ArrowLeft className="h-4 w-4 mr-1" /> Inapoi
             </Button>
-            <Button
-              onClick={() => { setError(""); if (validateStep2()) setStep(3); }}
-              className="bg-gold hover:bg-gold-light"
-            >
-              Continua <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleSaveDraft}
+                disabled={savingDraft}
+              >
+                {savingDraft ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4 mr-1" />
+                )}
+                Salveaza ca ciorna
+              </Button>
+              <Button
+                onClick={() => { setError(""); if (validateStep2()) setStep(3); }}
+                className="bg-gold hover:bg-gold-light"
+              >
+                Continua <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
           </div>
         </div>
       )}

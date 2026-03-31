@@ -5,6 +5,7 @@ import { ro } from "date-fns/locale";
 import { User, MapPin, Calendar, ShieldCheck, Phone, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SellerBadges } from "@/components/ads/SellerBadges";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -135,6 +136,9 @@ export default async function SellerProfilePage({ params }: Props) {
                     </Badge>
                   )}
                 </div>
+
+                {/* Seller Badges */}
+                <SellerBadges userId={user.id} />
 
                 {/* Rating */}
                 {reviewCount > 0 && (

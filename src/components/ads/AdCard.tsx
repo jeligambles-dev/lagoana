@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, Star } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ro } from "date-fns/locale";
+import { CompareButton } from "./CompareButton";
 
 interface AdCardProps {
   ad: {
@@ -70,6 +71,7 @@ export function AdCard({ ad }: AdCardProps) {
             {conditionLabels[ad.condition] || ad.condition}
           </Badge>
         </div>
+        <CompareButton adId={ad.id} thumbnail={imageUrl} />
       </div>
 
       {/* Info */}

@@ -16,16 +16,80 @@ export async function POST(request: Request) {
   }
 
   const data = await request.json();
-  const { title, description, categoryId, condition, price, isNegotiable, county, city, images, attributes } = data;
+  const { title, description, categoryId, condition, price, isNegotiable, county, city, images, attributes, status: adStatus, draftId } = data;
 
-  if (!title || !description || !categoryId || !condition || !county || !city) {
-    return NextResponse.json({ error: "Campuri obligatorii lipsa." }, { status: 400 });
+  const isDraft = adStatus === "DRAFT";
+
+  // For drafts, only title is required (allow partial saves)
+  if (isDraft) {
+    if (!title) {
+      return NextResponse.json({ error: "Titlul este obligatoriu chiar si pentru ciorne." }, { status: 400 });
+    }
+  } else {
+    if (!title || !description || !categoryId || !condition || !county || !city) {
+      return NextResponse.json({ error: "Campuri obligatorii lipsa." }, { status: 400 });
+    }
   }
 
-  // Check user has a phone number saved
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { phone: true } });
-  if (!user?.phone) {
-    return NextResponse.json({ error: "Trebuie sa ai un numar de telefon salvat in profil pentru a publica un anunt." }, { status: 400 });
+  // Check user has a phone number saved (skip for drafts)
+  if (!isDraft) {
+    const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { phone: true } });
+    if (!user?.phone) {
+      return NextResponse.json({ error: "Trebuie sa ai un numar de telefon salvat in profil pentru a publica un anunt." }, { status: 400 });
+    }
+  }
+
+  // If updating an existing draft, update it instead of creating new
+  if (draftId) {
+    const existingDraft = await prisma.ad.findUnique({ where: { id: draftId } });
+    if (!existingDraft || existingDraft.userId !== session.user.id || existingDraft.status !== "DRAFT") {
+      return NextResponse.json({ error: "Ciorna negasita." }, { status: 404 });
+    }
+
+    // Delete old images and re-create
+    if (images?.length) {
+      await prisma.adImage.deleteMany({ where: { adId: draftId } });
+    }
+
+    const newExpiresAt = new Date();
+    newExpiresAt.setDate(newExpiresAt.getDate() + AD_EXPIRY_DAYS);
+
+    const updated = await prisma.ad.update({
+      where: { id: draftId },
+      data: {
+        title,
+        description: description || "",
+        categoryId: categoryId || existingDraft.categoryId,
+        condition: condition || existingDraft.condition,
+        price: price ? parseFloat(price) : null,
+        isNegotiable: isNegotiable || false,
+        county: county || "",
+        city: city || "",
+        status: isDraft ? "DRAFT" : "ACTIVE",
+        expiresAt: isDraft ? undefined : newExpiresAt,
+        images: images?.length
+          ? {
+              create: images.map((img: { url: string }, i: number) => ({
+                url: img.url,
+                position: i,
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        category: { select: { slug: true } },
+      },
+    });
+
+    if (!isDraft) {
+      return NextResponse.json({
+        success: true,
+        slug: updated.slug,
+        categorySlug: updated.category.slug,
+      }, { status: 201 });
+    }
+
+    return NextResponse.json({ success: true, id: updated.id }, { status: 200 });
   }
 
   const baseSlug = slugify(title, { lower: true, strict: true, locale: "ro" });
@@ -33,6 +97,36 @@ export async function POST(request: Request) {
 
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + AD_EXPIRY_DAYS);
+
+  // For drafts, skip referral logic and create immediately
+  if (isDraft) {
+    const ad = await prisma.ad.create({
+      data: {
+        userId: session.user.id,
+        categoryId: categoryId || (await prisma.category.findFirst({ select: { id: true } }))!.id,
+        title,
+        slug,
+        description: description || "",
+        price: price ? parseFloat(price) : null,
+        isNegotiable: isNegotiable || false,
+        condition: condition || "USED",
+        county: county || "",
+        city: city || "",
+        status: "DRAFT",
+        expiresAt,
+        images: images?.length
+          ? {
+              create: images.map((img: { url: string }, i: number) => ({
+                url: img.url,
+                position: i,
+              })),
+            }
+          : undefined,
+      },
+    });
+
+    return NextResponse.json({ success: true, id: ad.id }, { status: 201 });
+  }
 
   // Check referral reward: 3+ referrals = free promoted ad
   let promotedUntil: Date | undefined;

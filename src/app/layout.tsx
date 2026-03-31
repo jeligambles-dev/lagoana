@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { PwaRegistration } from "@/components/layout/PwaRegistration";
 import { PwaInstallPrompt } from "@/components/layout/PwaInstallPrompt";
 import { CookieConsent } from "@/components/layout/CookieConsent";
+import { CompareBar } from "@/components/ads/CompareBar";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -68,6 +69,7 @@ export default function RootLayout({
           <Toaster />
           <PwaRegistration />
           <PwaInstallPrompt />
+          <CompareBar />
           <CookieConsent />
         </Providers>
       </body>

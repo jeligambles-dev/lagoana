@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Eye, Heart, Edit, Pencil, Trash2, RotateCcw } from "lucide-react";
+import { Plus, Eye, Heart, Edit, Pencil, Trash2, RotateCcw, BarChart3 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ro } from "date-fns/locale";
 import { DeleteAdButton } from "@/components/ads/DeleteAdButton";
@@ -109,8 +109,16 @@ export default async function MyAdsPage() {
                             <Button render={<Link href={`/cont/anunturile-mele/editeaza/${ad.id}`} />} variant="outline" size="sm">
                                 <Pencil className="h-3 w-3 mr-1" /> Editeaza
                             </Button>
+                            <Button render={<Link href={`/cont/anunturile-mele/analytics/${ad.id}`} />} variant="outline" size="sm">
+                                <BarChart3 className="h-3 w-3 mr-1" /> Statistici
+                            </Button>
                             <MarkSoldButton adId={ad.id} />
                           </>
+                        )}
+                        {ad.status === "DRAFT" && (
+                          <Button render={<Link href={`/publica?draft=${ad.id}`} />} variant="outline" size="sm">
+                              <Pencil className="h-3 w-3 mr-1" /> Continua editarea
+                          </Button>
                         )}
                         {ad.status !== "REMOVED" && ad.status !== "SOLD" && (
                           <DeleteAdButton adId={ad.id} />

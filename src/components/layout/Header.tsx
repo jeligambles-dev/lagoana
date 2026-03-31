@@ -26,6 +26,7 @@ import {
   Store,
   Bell,
   FileText,
+  FileEdit,
   ChevronDown,
   Crosshair,
   Target,
@@ -119,6 +120,9 @@ export function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuItem render={<Link href="/cont/anunturile-mele" />} className="text-[#EDEDED] focus:bg-[#1B3A2B] focus:text-gold">
                         <FileText className="h-4 w-4 mr-2" /> Anunturile mele
+                      </DropdownMenuItem>
+                      <DropdownMenuItem render={<Link href="/cont/ciorne" />} className="text-[#EDEDED] focus:bg-[#1B3A2B] focus:text-gold">
+                        <FileEdit className="h-4 w-4 mr-2" /> Ciorne
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="bg-[#2A2A2A]" />
                       <DropdownMenuItem render={<Link href="/cont/mesaje" />} className="text-[#EDEDED] focus:bg-[#1B3A2B] focus:text-gold">

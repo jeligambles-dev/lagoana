@@ -101,11 +101,14 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Info & Legal */}
           <div>
             <h3 className="font-semibold text-[#EDEDED] mb-3">Informatii</h3>
             <ul className="space-y-2 text-sm text-[#888]">
               <li><Link href="/despre" className="hover:text-gold transition">Despre noi</Link></li>
+              <li><Link href="/calendar-vanatoare" className="hover:text-gold transition">Calendar vanatoare</Link></li>
+              <li><Link href="/ghid-echipament" className="hover:text-gold transition">Ghid echipament</Link></li>
+              <li><Link href="/glosar" className="hover:text-gold transition">Glosar vanatoare</Link></li>
               <li><Link href="/termeni" className="hover:text-gold transition">Termeni si conditii</Link></li>
               <li><Link href="/contact" className="hover:text-gold transition">Contact</Link></li>
               <li><Link href="/publicitate" className="hover:text-gold transition">Publicitate</Link></li>
