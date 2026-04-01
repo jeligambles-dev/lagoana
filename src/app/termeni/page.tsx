@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Termeni si Conditii",
@@ -6,7 +7,30 @@ export const metadata: Metadata = {
     "Termenii si conditiile de utilizare a platformei Lagoana - piata online de echipament de vanatoare.",
 };
 
-export default function TermeniPage() {
+async function getPageContent() {
+  try {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: "termeni" },
+    });
+    return page;
+  } catch {
+    return null;
+  }
+}
+
+export default async function TermeniPage() {
+  const pageContent = await getPageContent();
+
+  // If we have DB content, render it
+  if (pageContent) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <div dangerouslySetInnerHTML={{ __html: pageContent.content }} />
+      </div>
+    );
+  }
+
+  // Fallback: original hardcoded content
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-3xl sm:text-4xl font-bold text-[#EDEDED] mb-8">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { UserPlus, FileText, MessageCircle } from "lucide-react";
+import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Despre Lagoana",
@@ -28,7 +29,58 @@ const steps = [
   },
 ];
 
-export default function DesprePage() {
+async function getPageContent() {
+  try {
+    const page = await prisma.pageContent.findUnique({
+      where: { slug: "despre" },
+    });
+    return page;
+  } catch {
+    return null;
+  }
+}
+
+export default async function DesprePage() {
+  const pageContent = await getPageContent();
+
+  // If we have DB content, render it
+  if (pageContent) {
+    return (
+      <div>
+        <div dangerouslySetInnerHTML={{ __html: pageContent.content }} />
+
+        {/* How it works - always shown */}
+        <section className="max-w-4xl mx-auto px-4 pb-16">
+          <h2 className="text-2xl font-bold text-[#EDEDED] mb-8 text-center">
+            Cum functioneaza?
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <div
+                  key={index}
+                  className="bg-[#111111] rounded-xl border border-[#2A2A2A] p-6 text-center"
+                >
+                  <div className="w-14 h-14 bg-[#1B3A2B] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Icon className="h-6 w-6 text-gold" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-[#EDEDED] mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-[#888] text-sm leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // Fallback: original hardcoded content
   return (
     <div>
       {/* Hero */}

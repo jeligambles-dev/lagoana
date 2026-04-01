@@ -466,6 +466,17 @@ model Newsletter {
   isActive     Boolean  @default(true)
 }
 
+// ─── Page Content (admin-editable pages) ──────────────
+
+model PageContent {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
+
 // ─── Admin Audit Log ───────────────────────────────────
 
 model AdminAuditLog {
