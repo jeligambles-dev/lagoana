@@ -211,66 +211,66 @@ export default function AdminBannersPage() {
         <div className="space-y-3">
           {banners.map((banner, idx) => (
             <Card key={banner.id} className={!banner.isActive || isExpired(banner) ? "opacity-60" : ""}>
-              <CardContent className="p-4">
-                <div className="flex gap-4">
-                  {/* Thumbnail */}
-                  <div className="relative w-40 h-20 shrink-0 rounded-lg overflow-hidden bg-[#1E1E1E]">
+              <CardContent className="p-4 space-y-3">
+                  {/* Banner image - full width preview */}
+                  <div className="relative w-full aspect-[3/1] rounded-lg overflow-hidden bg-[#1E1E1E]">
                     <Image
                       src={banner.imageUrl}
                       alt={banner.title}
                       fill
                       className="object-cover"
-                      sizes="160px"
+                      sizes="600px"
                     />
                   </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-[#EDEDED] truncate">{banner.title}</h3>
-                      {banner.isActive && !isExpired(banner) && (
-                        <Badge className="bg-[#1B3A2B] text-gold text-[10px]">Activ</Badge>
+                  {/* Info row */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <h3 className="font-medium text-[#EDEDED]">{banner.title}</h3>
+                        {banner.isActive && !isExpired(banner) && (
+                          <Badge className="bg-[#1B3A2B] text-gold text-[10px]">Activ</Badge>
+                        )}
+                        {!banner.isActive && (
+                          <Badge className="bg-[#1E1E1E] text-[#888] text-[10px]">Inactiv</Badge>
+                        )}
+                        {isExpired(banner) && (
+                          <Badge className="bg-red-900/30 text-red-400 text-[10px]">Expirat</Badge>
+                        )}
+                      </div>
+                      {banner.company && (
+                        <p className="text-xs text-gold mb-1">{banner.company}</p>
                       )}
-                      {!banner.isActive && (
-                        <Badge className="bg-[#1E1E1E] text-[#888] text-[10px]">Inactiv</Badge>
-                      )}
-                      {isExpired(banner) && (
-                        <Badge className="bg-red-900/30 text-red-400 text-[10px]">Expirat</Badge>
-                      )}
-                    </div>
-                    {banner.company && (
-                      <p className="text-xs text-gold mb-1">{banner.company}</p>
-                    )}
-                    <div className="flex items-center gap-3 text-xs text-[#888]">
-                      <span>De la: {formatDate(banner.startsAt)}</span>
-                      {banner.expiresAt && <span>Pana la: {formatDate(banner.expiresAt)}</span>}
-                      {banner.linkUrl && (
-                        <a href={banner.linkUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-0.5 text-gold hover:underline">
-                          <ExternalLink className="h-3 w-3" /> Link
-                        </a>
-                      )}
+                      <div className="flex items-center gap-3 text-xs text-[#888] flex-wrap">
+                        <span>De la: {formatDate(banner.startsAt)}</span>
+                        {banner.expiresAt && <span>Pana la: {formatDate(banner.expiresAt)}</span>}
+                        {banner.linkUrl && (
+                          <a href={banner.linkUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-0.5 text-gold hover:underline">
+                            <ExternalLink className="h-3 w-3" /> Link
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
+                  {/* Actions row */}
+                  <div className="flex items-center gap-2 flex-wrap border-t border-[#2A2A2A] pt-3">
                     <Button variant="ghost" size="sm" onClick={() => movePosition(banner, "up")} disabled={idx === 0}>
-                      <ArrowUp className="h-3 w-3" />
+                      <ArrowUp className="h-3 w-3 mr-1" /> Sus
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => movePosition(banner, "down")} disabled={idx === banners.length - 1}>
-                      <ArrowDown className="h-3 w-3" />
+                      <ArrowDown className="h-3 w-3 mr-1" /> Jos
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => toggleActive(banner)}>
                       {banner.isActive ? "Dezactiveaza" : "Activeaza"}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => openEdit(banner)}>
-                      <Edit className="h-3 w-3" />
+                      <Edit className="h-3 w-3 mr-1" /> Editeaza
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => handleDelete(banner.id)} className="text-red-600">
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-3 w-3 mr-1" /> Sterge
                     </Button>
                   </div>
-                </div>
               </CardContent>
             </Card>
           ))}
