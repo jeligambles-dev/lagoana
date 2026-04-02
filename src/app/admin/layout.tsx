@@ -27,7 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
       <div className="flex flex-col lg:flex-row gap-6">
         <aside className="lg:w-56 shrink-0">
-          <nav className="bg-[#111111] rounded-xl border border-[#2A2A2A] p-2 space-y-1 lg:sticky lg:top-20">
+          <nav className="bg-[#111111] rounded-xl border border-[#2A2A2A] p-2 space-y-1 lg:sticky lg:top-32">
             {adminLinks.map((link) => (
               <Link
                 key={link.href}

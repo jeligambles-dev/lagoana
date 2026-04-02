@@ -16,7 +16,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="flex flex-col lg:flex-row gap-6">
         <aside className="lg:w-56 shrink-0">
-          <nav className="bg-[#111111] rounded-xl border border-[#2A2A2A] p-2 space-y-1 lg:sticky lg:top-20">
+          <nav className="bg-[#111111] rounded-xl border border-[#2A2A2A] p-2 space-y-1 lg:sticky lg:top-32">
             {sidebarLinks.map((link) => (
               <Link
                 key={link.href}

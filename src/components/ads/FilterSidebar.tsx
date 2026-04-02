@@ -52,7 +52,7 @@ export function FilterSidebar({ categories, currentParams }: FilterSidebarProps)
   }
 
   return (
-    <div className="bg-[#111111] rounded-xl border border-[#2A2A2A] p-4 space-y-5 sticky top-20">
+    <div className="bg-[#111111] rounded-xl border border-[#2A2A2A] p-4 space-y-5 sticky top-32">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-[#EDEDED] flex items-center gap-1.5">
           <Filter className="h-4 w-4 text-gold" /> Filtre
