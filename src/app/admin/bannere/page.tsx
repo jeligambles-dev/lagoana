@@ -192,7 +192,7 @@ export default function AdminBannersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between sticky top-28 z-40 bg-[#0B0B0B] py-3 -mx-1 px-1">
         <h2 className="text-xl font-bold text-[#EDEDED]">Gestionare bannere</h2>
         <Button onClick={openAdd} className="bg-gold hover:bg-gold-light">
           <Plus className="h-4 w-4 mr-1" /> Banner nou
