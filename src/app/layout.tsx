@@ -60,9 +60,9 @@ export default function RootLayout({
     <html lang="ro" className={`${inter.variable} h-full antialiased`}>
       <head>
         <link rel="apple-touch-icon" href="/logo.png" />
+        <GoogleAnalytics />
       </head>
       <body className="min-h-full flex flex-col font-sans">
-        <GoogleAnalytics />
         <Providers>
           <Header />
           <main className="flex-1 pb-16 sm:pb-0">{children}</main>
