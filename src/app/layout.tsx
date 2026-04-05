@@ -10,6 +10,7 @@ import { PwaRegistration } from "@/components/layout/PwaRegistration";
 import { PwaInstallPrompt } from "@/components/layout/PwaInstallPrompt";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import { CompareBar } from "@/components/ads/CompareBar";
+import { GoogleAnalytics } from "@/components/layout/GoogleAnalytics";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -61,6 +62,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body className="min-h-full flex flex-col font-sans">
+        <GoogleAnalytics />
         <Providers>
           <Header />
           <main className="flex-1 pb-16 sm:pb-0">{children}</main>
