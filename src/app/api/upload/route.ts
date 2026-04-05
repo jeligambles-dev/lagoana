@@ -4,6 +4,9 @@ import { writeFile, mkdir, readFile } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 
+const HOSTGATE_UPLOAD_URL = process.env.HOSTGATE_UPLOAD_URL; // e.g. https://images.lagoana.ro/upload.php
+const HOSTGATE_AUTH_TOKEN = process.env.HOSTGATE_AUTH_TOKEN;
+
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -94,8 +97,37 @@ export async function POST(request: Request) {
   }
 
   const filename = `${session.user.id}-${Date.now()}.webp`;
-  const filepath = path.join(uploadDir, filename);
 
+  // If hostgate is configured, upload there; otherwise fall back to local storage
+  if (HOSTGATE_UPLOAD_URL && HOSTGATE_AUTH_TOKEN) {
+    try {
+      const uploadForm = new FormData();
+      const blob = new Blob([new Uint8Array(processedBuffer)], { type: "image/webp" });
+      uploadForm.append("file", blob, filename);
+      uploadForm.append("filename", filename);
+
+      const hostgateRes = await fetch(HOSTGATE_UPLOAD_URL, {
+        method: "POST",
+        headers: { "X-Auth-Token": HOSTGATE_AUTH_TOKEN },
+        body: uploadForm,
+      });
+
+      if (hostgateRes.ok) {
+        const data = await hostgateRes.json();
+        return NextResponse.json({
+          url: data.url,
+          thumbnailUrl: data.url,
+        });
+      }
+      // If hostgate fails, fall through to local storage as backup
+      console.error("Hostgate upload failed:", await hostgateRes.text());
+    } catch (err) {
+      console.error("Hostgate upload error:", err);
+    }
+  }
+
+  // Fallback: save locally
+  const filepath = path.join(uploadDir, filename);
   await writeFile(filepath, processedBuffer);
 
   return NextResponse.json({
