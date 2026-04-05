@@ -12,60 +12,10 @@ import {
   Eye,
   MousePointerClick,
   Monitor,
-  Check,
   Send,
   Image as ImageIcon,
-  Clock,
   BarChart3,
 } from "lucide-react";
-
-const pricingTiers = [
-  {
-    name: "Saptamanal",
-    duration: "1 saptamana",
-    price: 149,
-    description: "Ideal pentru promovari rapide si evenimente.",
-    features: [
-      "Banner pe pagina principala",
-      "Vizibil pe toate dispozitivele",
-      "Raport de performanta la final",
-      "1 modificare de banner inclusa",
-    ],
-    popular: false,
-  },
-  {
-    name: "Lunar",
-    duration: "1 luna",
-    price: 449,
-    description: "Cel mai popular. Expunere constanta timp de 30 de zile.",
-    features: [
-      "Banner pe pagina principala",
-      "Vizibil pe toate dispozitivele",
-      "Raport saptamanal de performanta",
-      "3 modificari de banner incluse",
-      "Prioritate in rotatie",
-      "Mentiune in newsletter",
-    ],
-    popular: true,
-  },
-  {
-    name: "Trimestrial",
-    duration: "3 luni",
-    price: 999,
-    description: "Cel mai bun raport calitate-pret. Economisesti 30%.",
-    features: [
-      "Banner pe pagina principala",
-      "Vizibil pe toate dispozitivele",
-      "Raport saptamanal de performanta",
-      "Modificari nelimitate de banner",
-      "Prioritate maxima in rotatie",
-      "Mentiune in newsletter",
-      "Banner dedicat in email-uri",
-      "Postare pe social media",
-    ],
-    popular: false,
-  },
-];
 
 const stats = [
   { icon: Users, label: "Utilizatori activi", value: "5,000+" },
@@ -107,7 +57,6 @@ export default function PublicitatePage() {
     email: "",
     company: "",
     phone: "",
-    tier: "",
     message: "",
   });
   const [status, setStatus] = useState<
@@ -126,7 +75,7 @@ export default function PublicitatePage() {
           name: form.name,
           email: form.email,
           subject: "Cerere publicitate",
-          message: `Companie: ${form.company}\nTelefon: ${form.phone}\nPachet dorit: ${form.tier}\n\n${form.message}`,
+          message: `Companie: ${form.company}\nTelefon: ${form.phone}\n\n${form.message}`,
         }),
       });
 
@@ -138,8 +87,7 @@ export default function PublicitatePage() {
         email: "",
         company: "",
         phone: "",
-        tier: "",
-        message: "",
+            message: "",
       });
     } catch {
       setStatus("error");
@@ -192,82 +140,27 @@ export default function PublicitatePage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Contact for pricing */}
       <section className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="text-center mb-12">
+        <div className="bg-[#111111] rounded-xl border border-gold/30 p-8 sm:p-12 text-center">
+          <Megaphone className="h-12 w-12 text-gold mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-bold text-[#EDEDED] mb-3">
-            Pachete de publicitate
+            Interesat de publicitate?
           </h2>
-          <p className="text-[#888] max-w-xl mx-auto">
-            Alege pachetul potrivit pentru afacerea ta. Toate preturile includ
-            TVA.
+          <p className="text-[#AAAAAA] max-w-xl mx-auto mb-6">
+            Contacteaza-ne pentru o oferta personalizata adaptata nevoilor afacerii tale.
+            Raspundem in maxim 24 de ore cu toate detaliile si preturile.
           </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {pricingTiers.map((tier) => (
-            <div
-              key={tier.name}
-              className={`relative bg-[#111111] rounded-xl border p-6 sm:p-8 flex flex-col ${
-                tier.popular
-                  ? "border-gold ring-1 ring-gold/20"
-                  : "border-[#2A2A2A]"
-              }`}
-            >
-              {tier.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-gold text-[#0B0B0B] text-xs font-bold px-3 py-1 rounded-full">
-                    Cel mai popular
-                  </span>
-                </div>
-              )}
-
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-4 w-4 text-gold" />
-                  <span className="text-sm text-gold font-medium">
-                    {tier.duration}
-                  </span>
-                </div>
-                <h3 className="text-xl font-bold text-[#EDEDED] mb-2">
-                  {tier.name}
-                </h3>
-                <p className="text-sm text-[#888]">{tier.description}</p>
-              </div>
-
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-[#EDEDED]">
-                  {tier.price}
-                </span>
-                <span className="text-[#888] ml-1">RON</span>
-              </div>
-
-              <ul className="space-y-3 mb-8 flex-1">
-                {tier.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-gold shrink-0 mt-0.5" />
-                    <span className="text-sm text-[#AAAAAA]">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                onClick={() => {
-                  setForm((f) => ({ ...f, tier: tier.name }));
-                  document
-                    .getElementById("contact-form")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className={`w-full h-10 font-semibold ${
-                  tier.popular
-                    ? "bg-gold text-[#0B0B0B] hover:bg-gold-light"
-                    : "bg-[#1E1E1E] text-[#EDEDED] border border-[#2A2A2A] hover:border-gold hover:text-gold"
-                }`}
-              >
-                Solicita oferta
-              </Button>
-            </div>
-          ))}
+          <Button
+            onClick={() => {
+              document
+                .getElementById("contact-form")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="bg-gold text-[#0B0B0B] hover:bg-gold-light font-semibold h-11 px-8"
+          >
+            <Send className="h-4 w-4 mr-2" /> Solicita oferta
+          </Button>
         </div>
       </section>
 
@@ -444,27 +337,6 @@ export default function PublicitatePage() {
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="tier"
-                className="block text-sm text-[#888] mb-1.5"
-              >
-                Pachet dorit
-              </label>
-              <select
-                id="tier"
-                value={form.tier}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, tier: e.target.value }))
-                }
-                className="w-full h-10 rounded-md bg-[#1E1E1E] text-[#EDEDED] border border-[#2A2A2A] focus:border-gold px-3 text-sm outline-none"
-              >
-                <option value="">Selecteaza un pachet</option>
-                <option value="Saptamanal">Saptamanal - 149 RON</option>
-                <option value="Lunar">Lunar - 449 RON</option>
-                <option value="Trimestrial">Trimestrial - 999 RON</option>
-              </select>
-            </div>
 
             <div>
               <label

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, readFile } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 
@@ -56,29 +56,42 @@ export async function POST(request: Request) {
   const imgWidth = resizedMeta.width || 1920;
   const imgHeight = resizedMeta.height || 1080;
 
-  // Create a semi-transparent watermark SVG
-  const watermarkText = "lagoana.ro";
-  const fontSize = Math.max(16, Math.round(imgWidth * 0.025));
-  const padding = Math.round(fontSize * 0.8);
-  const watermarkSvg = Buffer.from(
-    `<svg width="${imgWidth}" height="${imgHeight}" xmlns="http://www.w3.org/2000/svg">
-      <text
-        x="${imgWidth - padding}"
-        y="${imgHeight - padding}"
-        font-family="sans-serif"
-        font-size="${fontSize}"
-        fill="white"
-        fill-opacity="0.3"
-        text-anchor="end"
-      >${watermarkText}</text>
-    </svg>`
-  );
+  // Load the logo and resize it for watermark (scales with image size)
+  const logoPath = path.join(process.cwd(), "public", "logo.png");
+  const watermarkSize = Math.max(60, Math.round(imgWidth * 0.12)); // 12% of image width, min 60px
+  const padding = Math.round(watermarkSize * 0.15);
 
-  // Apply watermark and convert to WebP with quality 80
-  const processedBuffer = await sharp(resizedBuffer)
-    .composite([{ input: watermarkSvg, top: 0, left: 0 }])
-    .webp({ quality: 80 })
-    .toBuffer();
+  let processedBuffer: Buffer;
+  try {
+    const logoBuffer = await readFile(logoPath);
+    const watermarkLogo = await sharp(logoBuffer)
+      .resize({ width: watermarkSize, height: watermarkSize, fit: "inside" })
+      .composite([
+        {
+          input: Buffer.from([255, 255, 255, Math.round(255 * 0.4)]),
+          raw: { width: 1, height: 1, channels: 4 },
+          tile: true,
+          blend: "dest-in",
+        },
+      ])
+      .png()
+      .toBuffer();
+
+    // Apply logo watermark in bottom-right and convert to WebP
+    processedBuffer = await sharp(resizedBuffer)
+      .composite([
+        {
+          input: watermarkLogo,
+          top: imgHeight - watermarkSize - padding,
+          left: imgWidth - watermarkSize - padding,
+        },
+      ])
+      .webp({ quality: 80 })
+      .toBuffer();
+  } catch {
+    // Fallback: no watermark if logo fails to load
+    processedBuffer = await sharp(resizedBuffer).webp({ quality: 80 }).toBuffer();
+  }
 
   const filename = `${session.user.id}-${Date.now()}.webp`;
   const filepath = path.join(uploadDir, filename);
