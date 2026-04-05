@@ -34,6 +34,17 @@ export async function PUT(request: Request) {
 
   const { name, phone, bio, county, city } = await request.json();
 
+  // Validate phone: must be 10 digits if provided
+  if (phone) {
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length !== 10) {
+      return NextResponse.json(
+        { error: "Numarul de telefon trebuie sa aiba 10 cifre." },
+        { status: 400 }
+      );
+    }
+  }
+
   await prisma.user.update({
     where: { id: session.user.id },
     data: { name, phone, bio, county, city },

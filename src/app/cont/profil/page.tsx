@@ -53,6 +53,16 @@ export default function ProfilePage() {
 
   async function handleSave() {
     if (!profile) return;
+
+    // Validate phone: must be 10 digits if provided
+    if (profile.phone) {
+      const digits = profile.phone.replace(/\D/g, "");
+      if (digits.length !== 10) {
+        toast.error("Numarul de telefon trebuie sa aiba 10 cifre.");
+        return;
+      }
+    }
+
     setSaving(true);
 
     const res = await fetch("/api/profile", {

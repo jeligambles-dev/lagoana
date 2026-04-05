@@ -31,11 +31,15 @@ export async function POST(request: Request) {
     }
   }
 
-  // Check user has a phone number saved (skip for drafts)
+  // Check user has a valid phone number saved (skip for drafts)
   if (!isDraft) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { phone: true } });
     if (!user?.phone) {
       return NextResponse.json({ error: "Trebuie sa ai un numar de telefon salvat in profil pentru a publica un anunt." }, { status: 400 });
+    }
+    const phoneDigits = user.phone.replace(/\D/g, "");
+    if (phoneDigits.length !== 10) {
+      return NextResponse.json({ error: "Numarul de telefon din profil trebuie sa aiba 10 cifre." }, { status: 400 });
     }
   }
 
