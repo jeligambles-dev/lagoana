@@ -3,9 +3,20 @@ import { auth } from "@/lib/auth";
 import { writeFile, mkdir, readFile } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
+import crypto from "crypto";
 
 const HOSTGATE_UPLOAD_URL = process.env.HOSTGATE_UPLOAD_URL; // e.g. https://images.lagoana.ro/upload.php
-const HOSTGATE_AUTH_TOKEN = process.env.HOSTGATE_AUTH_TOKEN;
+const HOSTGATE_AUTH_TOKEN = process.env.HOSTGATE_AUTH_TOKEN; // shared secret
+
+function signHostgateRequest(method: string, url: string, secret: string) {
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const path = new URL(url).pathname;
+  const signature = crypto
+    .createHmac("sha256", secret)
+    .update(method + path + timestamp)
+    .digest("hex");
+  return { timestamp, signature };
+}
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -106,9 +117,14 @@ export async function POST(request: Request) {
       uploadForm.append("file", blob, filename);
       uploadForm.append("filename", filename);
 
+      const { timestamp, signature } = signHostgateRequest("POST", HOSTGATE_UPLOAD_URL, HOSTGATE_AUTH_TOKEN);
+
       const hostgateRes = await fetch(HOSTGATE_UPLOAD_URL, {
         method: "POST",
-        headers: { "X-Auth-Token": HOSTGATE_AUTH_TOKEN },
+        headers: {
+          "X-Auth-Timestamp": timestamp,
+          "X-Auth-Signature": signature,
+        },
         body: uploadForm,
       });
 
