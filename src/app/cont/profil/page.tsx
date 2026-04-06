@@ -279,7 +279,7 @@ export default function ProfilePage() {
       </Card>
 
       <VerificationSection />
-      <IdVerificationSection />
+      {/* <IdVerificationSection /> */}
     </div>
   );
 }

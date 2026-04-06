@@ -42,7 +42,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-[#EDEDED]">Gestionare utilizatori</h2>
 
-      <AdminIdVerifications />
+      {/* <AdminIdVerifications /> */}
 
       <form className="flex gap-3">
         <input
